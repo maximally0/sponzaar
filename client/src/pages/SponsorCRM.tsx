@@ -120,13 +120,36 @@ export const SponsorCRM = () => {
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Name</th>
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Email</th>
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Tier</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Contacted</th>
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Status</th>
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Notes</th>
             </tr>
           </thead>
           <tbody>
             {sponsors.map((sponsor, index) => (
-              <SponsorRow key={index} sponsor={sponsor} />
+              <tr key={index} className="border-b border-neutral-800 last:border-b-0 hover:bg-neutral-950 transition-colors">
+                <td className="px-6 py-4 text-white font-medium">{sponsor.name}</td>
+                <td className="px-6 py-4 text-neutral-300">{sponsor.email}</td>
+                <td className="px-6 py-4 text-neutral-300">{sponsor.tier}</td>
+                <td className="px-6 py-4 text-center">
+                  {sponsor.status === 'Contacted' || sponsor.status === 'In Talks' || sponsor.status === 'Closed' ? (
+                    <span className="text-green-400">✓</span>
+                  ) : (
+                    <span className="text-red-400">✗</span>
+                  )}
+                </td>
+                <td className="px-6 py-4">
+                  <span className={`px-2 py-1 text-xs rounded ${
+                    sponsor.status === 'Closed' ? 'bg-green-900 text-green-200' :
+                    sponsor.status === 'In Talks' ? 'bg-yellow-900 text-yellow-200' :
+                    sponsor.status === 'Contacted' ? 'bg-blue-900 text-blue-200' :
+                    'bg-neutral-800 text-neutral-400'
+                  }`}>
+                    {sponsor.status}
+                  </span>
+                </td>
+                <td className="px-6 py-4 text-neutral-400 text-sm max-w-xs truncate">{sponsor.notes}</td>
+              </tr>
             ))}
           </tbody>
         </table>
