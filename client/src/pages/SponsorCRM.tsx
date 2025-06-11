@@ -168,7 +168,7 @@ export const SponsorCRM = () => {
       email: sponsor.email,
       phone: '',
       tier: tierMap[sponsor.tier as keyof typeof tierMap] || 'Silver',
-      contacted: sponsor.status === 'Contacted' || sponsor.status === 'In Talks' || sponsor.status === 'Closed',
+      contacted: sponsor.status === 'Contacted' || sponsor.status === 'Interested' || sponsor.status === 'Closed',
       notes: sponsor.notes
     });
     setEditingIndex(index);
@@ -277,6 +277,28 @@ export const SponsorCRM = () => {
       ) || []
     }));
   };
+
+  const handleStatusUpdate = (sponsorIndex: number, newStatus: 'Contacted' | 'Interested' | 'Closed' | 'Ghosted') => {
+    setSponsors(prev => prev.map((sponsor, index) =>
+      index === sponsorIndex ? { ...sponsor, status: newStatus } : sponsor
+    ));
+    setStatusDropdownOpen(-1);
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'Contacted':
+        return 'bg-yellow-800 text-white';
+      case 'Interested':
+        return 'bg-blue-800 text-white';
+      case 'Closed':
+        return 'bg-green-800 text-white';
+      case 'Ghosted':
+        return 'bg-gray-700 text-white';
+      default:
+        return 'bg-gray-700 text-white';
+    }
+  };
   return (
     <div className="space-y-12">
       <div className="flex justify-between items-start">
@@ -347,21 +369,45 @@ export const SponsorCRM = () => {
                 <td className="px-6 py-4 text-neutral-300">{sponsor.email}</td>
                 <td className="px-6 py-4 text-neutral-300">{sponsor.tier}</td>
                 <td className="px-6 py-4 text-center">
-                  {sponsor.status === 'Contacted' || sponsor.status === 'In Talks' || sponsor.status === 'Closed' ? (
+                  {sponsor.status === 'Contacted' || sponsor.status === 'Interested' || sponsor.status === 'Closed' ? (
                     <span className="text-green-400">✓</span>
                   ) : (
                     <span className="text-red-400">✗</span>
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <span className={`px-2 py-1 text-xs rounded ${
-                    sponsor.status === 'Closed' ? 'bg-green-900 text-green-200' :
-                    sponsor.status === 'In Talks' ? 'bg-yellow-900 text-yellow-200' :
-                    sponsor.status === 'Contacted' ? 'bg-blue-900 text-blue-200' :
-                    'bg-neutral-800 text-neutral-400'
-                  }`}>
-                    {sponsor.status}
-                  </span>
+                  <div className="relative">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setStatusDropdownOpen(statusDropdownOpen === index ? -1 : index);
+                      }}
+                      className={`px-3 py-1 text-sm rounded-full ${getStatusBadgeClass(sponsor.status)} hover:opacity-80 transition-opacity`}
+                    >
+                      {sponsor.status}
+                    </button>
+                    
+                    {statusDropdownOpen === index && (
+                      <div className="absolute top-full left-0 mt-1 bg-black border border-neutral-700 rounded shadow-lg z-10">
+                        {['Contacted', 'Interested', 'Closed', 'Ghosted'].map((status) => (
+                          <button
+                            key={status}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleStatusUpdate(index, status as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted');
+                            }}
+                            className={`block w-full text-left px-4 py-2 text-sm hover:bg-neutral-900 transition-colors ${
+                              sponsor.status === status ? 'bg-neutral-800' : ''
+                            }`}
+                          >
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs mr-2 ${getStatusBadgeClass(status)}`}>
+                              {status}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 text-neutral-400 text-sm max-w-xs truncate">{sponsor.notes}</td>
                 <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
@@ -533,12 +579,7 @@ export const SponsorCRM = () => {
               
               <div>
                 <label className="block text-neutral-400 text-sm mb-1">Status</label>
-                <span className={`px-2 py-1 text-xs rounded ${
-                  sponsors[selectedSponsorIndex].status === 'Closed' ? 'bg-green-900 text-green-200' :
-                  sponsors[selectedSponsorIndex].status === 'In Talks' ? 'bg-yellow-900 text-yellow-200' :
-                  sponsors[selectedSponsorIndex].status === 'Contacted' ? 'bg-blue-900 text-blue-200' :
-                  'bg-neutral-800 text-neutral-400'
-                }`}>
+                <span className={`px-3 py-1 text-sm rounded-full ${getStatusBadgeClass(sponsors[selectedSponsorIndex].status)}`}>
                   {sponsors[selectedSponsorIndex].status}
                 </span>
               </div>
@@ -594,13 +635,13 @@ export const SponsorCRM = () => {
         </div>
       )}
 
-      {/* Deliverables Modal */}
+      {/* Kanban Deliverables Modal */}
       {isDeliverablesOpen && selectedSponsorIndex >= 0 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-          <div className="bg-black border border-white w-full max-w-2xl mx-4 p-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-black border border-white w-full max-w-6xl mx-4 p-8 max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-6">
               <h2 className="text-xl font-medium text-white">
-                Deliverables - {sponsors[selectedSponsorIndex].name}
+                Deliverables Tracker - {sponsors[selectedSponsorIndex].name}
               </h2>
               <button
                 onClick={() => setIsDeliverablesOpen(false)}
@@ -610,83 +651,133 @@ export const SponsorCRM = () => {
               </button>
             </div>
             
-            {/* Existing Deliverables */}
-            <div className="space-y-4 mb-8">
-              {deliverables[selectedSponsorIndex]?.length > 0 ? (
-                deliverables[selectedSponsorIndex].map((deliverable, index) => (
-                  <div key={index} className="border border-neutral-700 p-4 rounded">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-neutral-400 text-xs mb-1">Task</label>
-                        <p className="text-white">{deliverable.task}</p>
-                      </div>
-                      <div>
-                        <label className="block text-neutral-400 text-xs mb-1">Due Date</label>
-                        <p className="text-neutral-300">{deliverable.dueDate}</p>
-                      </div>
-                      <div>
-                        <label className="block text-neutral-400 text-xs mb-1">Status</label>
-                        <select
-                          value={deliverable.status}
-                          onChange={(e) => handleUpdateDeliverableStatus(index, e.target.value as any)}
-                          className="w-full bg-black border border-neutral-700 px-2 py-1 text-white text-sm"
-                        >
-                          <option value="Not Started">Not Started</option>
-                          <option value="In Progress">In Progress</option>
-                          <option value="Completed">Completed</option>
-                        </select>
-                      </div>
-                    </div>
+            {/* Kanban Board */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {['Not Started', 'In Progress', 'Completed'].map((columnStatus) => (
+                <div key={columnStatus} className="bg-zinc-900 border border-white rounded-lg p-4">
+                  <h3 className="text-white font-medium mb-4 text-center">
+                    {columnStatus}
+                    <span className="ml-2 text-xs text-neutral-400">
+                      ({deliverables[selectedSponsorIndex]?.filter(d => d.status === columnStatus).length || 0})
+                    </span>
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {deliverables[selectedSponsorIndex]?.filter(d => d.status === columnStatus).map((deliverable, index) => {
+                      const originalIndex = deliverables[selectedSponsorIndex]?.findIndex(d => d === deliverable) || 0;
+                      return (
+                        <div key={originalIndex} className="bg-black text-white border border-gray-700 rounded-md p-3">
+                          <h4 className="text-sm font-medium mb-2">{deliverable.task}</h4>
+                          <div className="flex justify-between items-center text-xs text-neutral-400">
+                            <span>Due: {new Date(deliverable.dueDate).toLocaleDateString()}</span>
+                            <div className="flex items-center">
+                              <div className={`w-2 h-2 rounded-full mr-2 ${
+                                deliverable.status === 'Completed' ? 'bg-green-500' :
+                                deliverable.status === 'In Progress' ? 'bg-yellow-500' :
+                                'bg-gray-500'
+                              }`}></div>
+                              <span className="text-xs bg-neutral-800 px-2 py-1 rounded">
+                                {sponsors[selectedSponsorIndex].name}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Status Update Buttons */}
+                          <div className="mt-3 flex space-x-2">
+                            {deliverable.status !== 'Not Started' && (
+                              <button
+                                onClick={() => handleUpdateDeliverableStatus(originalIndex, 'Not Started')}
+                                className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 rounded transition-colors"
+                              >
+                                Reset
+                              </button>
+                            )}
+                            {deliverable.status !== 'In Progress' && (
+                              <button
+                                onClick={() => handleUpdateDeliverableStatus(originalIndex, 'In Progress')}
+                                className="text-xs px-2 py-1 bg-yellow-700 hover:bg-yellow-600 rounded transition-colors"
+                              >
+                                Start
+                              </button>
+                            )}
+                            {deliverable.status !== 'Completed' && (
+                              <button
+                                onClick={() => handleUpdateDeliverableStatus(originalIndex, 'Completed')}
+                                className="text-xs px-2 py-1 bg-green-700 hover:bg-green-600 rounded transition-colors"
+                              >
+                                Complete
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Add New Deliverable Button */}
+                    <button
+                      onClick={() => setNewDeliverable(prev => ({ ...prev, status: columnStatus as any }))}
+                      className="w-full p-3 border-2 border-dashed border-gray-600 hover:border-gray-500 rounded-md text-gray-400 hover:text-gray-300 transition-colors text-sm"
+                    >
+                      + Add Deliverable
+                    </button>
                   </div>
-                ))
-              ) : (
-                <p className="text-neutral-500 text-center py-8">No deliverables assigned yet</p>
-              )}
+                </div>
+              ))}
             </div>
 
-            {/* Add New Deliverable */}
-            <div className="border-t border-neutral-700 pt-6">
-              <h3 className="text-lg font-medium text-white mb-4">Add New Deliverable</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-neutral-400 text-sm mb-2">Task Description</label>
-                  <input
-                    type="text"
-                    value={newDeliverable.task}
-                    onChange={(e) => setNewDeliverable(prev => ({ ...prev, task: e.target.value }))}
-                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white text-sm"
-                    placeholder="Enter task description"
-                  />
+            {/* Add New Deliverable Form */}
+            {(newDeliverable.task || newDeliverable.dueDate) && (
+              <div className="mt-6 p-4 bg-zinc-900 border border-gray-600 rounded-lg">
+                <h3 className="text-white font-medium mb-4">Add New Deliverable</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-neutral-400 text-sm mb-2">Task Description</label>
+                    <input
+                      type="text"
+                      value={newDeliverable.task}
+                      onChange={(e) => setNewDeliverable(prev => ({ ...prev, task: e.target.value }))}
+                      className="w-full bg-black border border-neutral-700 px-3 py-2 text-white text-sm"
+                      placeholder="e.g., Add logo to website"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-neutral-400 text-sm mb-2">Due Date</label>
+                    <input
+                      type="date"
+                      value={newDeliverable.dueDate}
+                      onChange={(e) => setNewDeliverable(prev => ({ ...prev, dueDate: e.target.value }))}
+                      className="w-full bg-black border border-neutral-700 px-3 py-2 text-white text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-neutral-400 text-sm mb-2">Status</label>
+                    <select
+                      value={newDeliverable.status}
+                      onChange={(e) => setNewDeliverable(prev => ({ ...prev, status: e.target.value as any }))}
+                      className="w-full bg-black border border-neutral-700 px-3 py-2 text-white text-sm"
+                    >
+                      <option value="Not Started">Not Started</option>
+                      <option value="In Progress">In Progress</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-neutral-400 text-sm mb-2">Due Date</label>
-                  <input
-                    type="date"
-                    value={newDeliverable.dueDate}
-                    onChange={(e) => setNewDeliverable(prev => ({ ...prev, dueDate: e.target.value }))}
-                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-neutral-400 text-sm mb-2">Status</label>
-                  <select
-                    value={newDeliverable.status}
-                    onChange={(e) => setNewDeliverable(prev => ({ ...prev, status: e.target.value as any }))}
-                    className="w-full bg-black border border-neutral-700 px-3 py-2 text-white text-sm"
+                <div className="flex space-x-3 mt-4">
+                  <button
+                    onClick={handleAddDeliverable}
+                    className="px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
                   >
-                    <option value="Not Started">Not Started</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                  </select>
+                    Add Deliverable
+                  </button>
+                  <button
+                    onClick={() => setNewDeliverable({ task: '', dueDate: '', status: 'Not Started' })}
+                    className="px-4 py-2 text-sm text-neutral-400 border border-neutral-800 bg-transparent hover:bg-neutral-950 transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={handleAddDeliverable}
-                className="mt-4 px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
-              >
-                Add Deliverable
-              </button>
-            </div>
+            )}
 
             <div className="flex justify-end pt-6">
               <button
