@@ -25,7 +25,7 @@ const App = () => (
         <Router>
           <Layout>
             <Switch>
-              <Route path="/" component={Dashboard} />
+              <Route path="/">{() => <Dashboard />}</Route>
               <Route path="/crm" component={SponsorCRM} />
               <Route path="/automations" component={Automations} />
               <Route path="/sponsor-lists" component={SponsorLists} />
