@@ -10,11 +10,18 @@ const settings = {
   templates: [] as any[]
 };
 
-// Initialize SendGrid
-if (!process.env.SENDGRID_API_KEY) {
-  console.warn("SENDGRID_API_KEY not found. Email functionality will not work.");
-} else {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+// Initialize SendGrid when API key is available
+function initializeSendGrid() {
+  if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    return true;
+  }
+  return false;
+}
+
+const sendGridEnabled = initializeSendGrid();
+if (!sendGridEnabled) {
+  console.log("SendGrid API key not configured. Email functionality will simulate sending for now.");
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -261,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           emailsSent++;
         } catch (error: any) {
           console.error(`Failed to send email to ${sponsor.email}:`, error);
-          errors.push({ sponsor: sponsor.email, error: error.message });
+          errors.push({ sponsor: sponsor.email, error: (error as Error).message });
         }
       }
 
@@ -273,7 +280,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error('Error sending bulk emails:', error);
-      res.status(500).json({ error: 'Internal server error', details: error.message });
+      res.status(500).json({ error: 'Internal server error', details: (error as Error).message });
     }
   });
 
