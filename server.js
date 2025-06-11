@@ -43,6 +43,86 @@ app.get('/api/sponsors', (req, res) => {
   }
 });
 
+app.post('/api/sponsors', async (req, res) => {
+  try {
+    const { name, email, status, tier, notes } = req.body;
+    
+    if (!name || !email) {
+      return res.status(400).json({ error: 'Name and email are required' });
+    }
+
+    const newSponsor = {
+      id: Date.now().toString(),
+      name,
+      email,
+      status: status || 'active',
+      tier: tier || 'bronze',
+      notes: notes || '',
+      createdAt: new Date().toISOString()
+    };
+
+    db.data.sponsors.push(newSponsor);
+    await db.write();
+
+    res.status(201).json(newSponsor);
+  } catch (error) {
+    console.error('Error creating sponsor:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.patch('/api/sponsors/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const sponsorIndex = db.data.sponsors.findIndex(sponsor => sponsor.id === id);
+    
+    if (sponsorIndex === -1) {
+      return res.status(404).json({ error: 'Sponsor not found' });
+    }
+
+    // Update the sponsor with new data
+    db.data.sponsors[sponsorIndex] = {
+      ...db.data.sponsors[sponsorIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    await db.write();
+
+    res.json(db.data.sponsors[sponsorIndex]);
+  } catch (error) {
+    console.error('Error updating sponsor:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.delete('/api/sponsors/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const sponsorIndex = db.data.sponsors.findIndex(sponsor => sponsor.id === id);
+    
+    if (sponsorIndex === -1) {
+      return res.status(404).json({ error: 'Sponsor not found' });
+    }
+
+    const deletedSponsor = db.data.sponsors[sponsorIndex];
+    db.data.sponsors.splice(sponsorIndex, 1);
+
+    await db.write();
+
+    res.json({ 
+      message: 'Sponsor deleted successfully',
+      deletedSponsor 
+    });
+  } catch (error) {
+    console.error('Error deleting sponsor:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/deliverables', (req, res) => {
   try {
     const deliverables = db.data.deliverables;
