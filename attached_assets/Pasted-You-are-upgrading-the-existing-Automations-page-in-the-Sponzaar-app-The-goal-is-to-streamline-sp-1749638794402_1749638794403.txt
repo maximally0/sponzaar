@@ -1,0 +1,83 @@
+You are upgrading the existing Automations page in the Sponzaar app.
+
+The goal is to streamline sponsor outreach using saved templates, pitch deck links, smart filters, and bulk sending logic — all without a backend.
+
+Update the existing UI and logic with the following improvements:
+
+---
+
+🔁 1. Upgrade Email Templates with Variable Support & Preview
+- Modify the email body textarea to support variables like:
+  - {{sponsorName}}, {{eventName}}, {{tier}}, {{yourName}}
+- Below the template form, add a preview card:
+  - Render the filled version using a mock sponsor object:
+    ```js
+    {
+      sponsorName: "TechForge",
+      eventName: "Maximally Startup Makeathon",
+      tier: "Gold",
+      yourName: "Rishul"
+    }
+    ```
+- Add note near textarea: “Supports variables like {{sponsorName}}”
+- Store templates in local state, with options to edit/delete inline
+
+---
+
+📎 2. Add Pitch Deck Library Section
+- Create a section to save + display pitch deck links
+- Each entry has:
+  - Deck Name
+  - URL
+- Store in a local array (deckLibrary)
+- Allow adding/editing/removing deck links
+- In Outreach panel, allow selecting 1 pitch deck link to send
+
+---
+
+🎁 3. Add “Outreach Pack” Feature (Template + Deck + CTA)
+- New section: Create an Outreach Pack
+- Fields:
+  - Outreach Pack Name
+  - Email Template (dropdown)
+  - Pitch Deck (dropdown)
+  - CTA Label (e.g. “Schedule Call” or “View Brochure”)
+- On save, store in outreachPacks array
+- Display packs as cards with:
+  - Pack Name
+  - Preview Button
+  - Use This Pack button
+  - Delete Pack
+
+---
+
+📬 4. Improve Bulk Send Controls
+- Let user select sponsors from table who are not contacted
+- Add dropdowns to:
+  - Choose an Outreach Pack
+  - Display how many sponsors selected
+  - Button: “Send Outreach Email”
+- On send:
+  - Use console.log for each sponsor:
+    `Email sent to {{sponsorEmail}} using {{packName}}`
+  - Change status of each to Contacted = true
+  - Add toast: “Emails sent to 5 sponsors using Hackathon Pack”
+
+---
+
+📓 5. Add Activity Log (Bottom of Page)
+- After sending emails, log results in scrollable div:
+  - Example:
+    - ✅ Sent to techforge@gmail.com using “Hackathon Pack”
+    - ⚠️ Skipped startuphub@gmail.com (already contacted)
+- Logs should be stored in session state or a useRef array
+- Use `text-sm text-gray-400` inside `bg-zinc-900 p-2 rounded`
+
+---
+
+💡 Design Instructions
+- Keep theme minimal black + white (Tailwind)
+- Use ghost buttons, pill tags, clean white-on-black structure
+- Avoid animations, focus on fast rendering + clean UX
+
+All data should be stored in local React state only. No backend, database, or email sending is needed in this version.
