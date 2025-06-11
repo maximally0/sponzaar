@@ -7,6 +7,7 @@ import { Router, Route, Switch } from "wouter";
 import { SponsorListProvider } from "./hooks/useSponsorListStore";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { Layout } from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { SponsorCRM } from "./pages/SponsorCRM";
@@ -19,37 +20,53 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const AppRouter = () => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
   return (
     <Router>
       <Switch>
-        <Route path="/login">
-          {user ? <Dashboard /> : <Login />}
+        <Route path="/login" component={Login} />
+        <Route path="/crm">
+          <ProtectedRoute>
+            <Layout>
+              <SponsorCRM />
+            </Layout>
+          </ProtectedRoute>
         </Route>
-        {user ? (
-          <Layout>
-            <Switch>
-              <Route path="/" component={Dashboard} />
-              <Route path="/crm" component={SponsorCRM} />
-              <Route path="/automations" component={Automations} />
-              <Route path="/sponsor-lists" component={SponsorLists} />
-              <Route path="/sponsor-marketplace" component={SponsorListMarketplace} />
-              <Route path="/settings" component={Settings} />
-              <Route component={NotFound} />
-            </Switch>
-          </Layout>
-        ) : (
-          <Login />
-        )}
+        <Route path="/automations">
+          <ProtectedRoute>
+            <Layout>
+              <Automations />
+            </Layout>
+          </ProtectedRoute>
+        </Route>
+        <Route path="/sponsor-lists">
+          <ProtectedRoute>
+            <Layout>
+              <SponsorLists />
+            </Layout>
+          </ProtectedRoute>
+        </Route>
+        <Route path="/sponsor-marketplace">
+          <ProtectedRoute>
+            <Layout>
+              <SponsorListMarketplace />
+            </Layout>
+          </ProtectedRoute>
+        </Route>
+        <Route path="/settings">
+          <ProtectedRoute>
+            <Layout>
+              <Settings />
+            </Layout>
+          </ProtectedRoute>
+        </Route>
+        <Route path="/">
+          <ProtectedRoute>
+            <Layout>
+              <Dashboard />
+            </Layout>
+          </ProtectedRoute>
+        </Route>
+        <Route component={NotFound} />
       </Switch>
     </Router>
   );

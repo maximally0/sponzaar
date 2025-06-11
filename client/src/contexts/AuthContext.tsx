@@ -26,12 +26,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Load user from localStorage on app start
   useEffect(() => {
     const storedUser = localStorage.getItem("auth_user");
-    if (storedUser) {
+    const authToken = localStorage.getItem("auth_token");
+    
+    if (storedUser && authToken) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (error) {
         console.error("Failed to parse stored user:", error);
         localStorage.removeItem("auth_user");
+        localStorage.removeItem("auth_token");
       }
     }
     setIsLoading(false);
@@ -49,20 +52,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // For now, simulate login with a mock user
-      // Later this will make an actual API call
       console.log("Logging in with:", { email, password });
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      const mockUser: User = {
-        id: "user-123",
-        email: email,
-        name: email.split("@")[0]
-      };
-      
-      setUser(mockUser);
+      // Check credentials
+      if (email === "admin@sponzaar.com" && password === "sponzsecure") {
+        const authenticatedUser: User = {
+          id: "admin-123",
+          email: email,
+          name: "Admin User"
+        };
+        
+        // Store auth token in localStorage
+        localStorage.setItem("auth_token", "sponzaar_auth_token_" + Date.now());
+        setUser(authenticatedUser);
+      } else {
+        throw new Error("Invalid credentials");
+      }
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
@@ -74,6 +82,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("auth_token");
   };
 
   const value = {

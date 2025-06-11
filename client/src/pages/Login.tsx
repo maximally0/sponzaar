@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../contexts/AuthContext";
 
 export const Login = () => {
@@ -12,6 +13,7 @@ export const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [, setLocation] = useLocation();
   const { login } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +22,14 @@ export const Login = () => {
     try {
       console.log("Login attempt:", { email, password });
       await login(email, password);
-      setLocation("/"); // Redirect to dashboard after successful login
+      setLocation("/crm"); // Redirect to CRM after successful login
     } catch (error) {
       console.error("Login failed:", error);
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
