@@ -36,6 +36,8 @@ const initialSponsors = [
 export const SponsorCRM = () => {
   const [sponsors, setSponsors] = useState(initialSponsors);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(-1);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,6 +46,25 @@ export const SponsorCRM = () => {
     contacted: false,
     notes: ''
   });
+
+  // Sample sponsor lists for import
+  const sampleLists = {
+    'Hackathon Sponsors': [
+      { name: 'GitHub', email: 'sponsor@github.com', tier: '₹20K', status: 'Contacted', notes: 'Interested in developer tools showcase' },
+      { name: 'MongoDB', email: 'events@mongodb.com', tier: '₹15K', status: 'In Talks', notes: 'Database workshop sponsor' },
+      { name: 'AWS', email: 'startup@aws.com', tier: '₹25K', status: 'Closed', notes: 'Cloud infrastructure partner' }
+    ],
+    'EdTech Sponsors': [
+      { name: 'Coursera', email: 'partnerships@coursera.org', tier: '₹10K', status: 'Contacted', notes: 'Online learning platform' },
+      { name: 'Khan Academy', email: 'sponsor@khanacademy.org', tier: '₹8K', status: 'In Talks', notes: 'Educational content provider' },
+      { name: 'Udemy', email: 'business@udemy.com', tier: '₹12K', status: 'Closed', notes: 'Course creation tools' }
+    ],
+    'Startup Sponsors': [
+      { name: 'Y Combinator', email: 'events@ycombinator.com', tier: '₹30K', status: 'Contacted', notes: 'Startup accelerator' },
+      { name: 'Sequoia Capital', email: 'outreach@sequoiacap.com', tier: '₹25K', status: 'In Talks', notes: 'Venture capital firm' },
+      { name: 'AngelList', email: 'partnerships@angellist.com', tier: '₹15K', status: 'Closed', notes: 'Startup platform' }
+    ]
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -62,7 +83,7 @@ export const SponsorCRM = () => {
       'Title': '₹20K'
     };
 
-    const newSponsor = {
+    const sponsorData = {
       name: formData.name,
       email: formData.email,
       tier: tierPricing[formData.tier as keyof typeof tierPricing],
@@ -70,19 +91,24 @@ export const SponsorCRM = () => {
       notes: formData.notes
     };
 
-    setSponsors(prev => [...prev, newSponsor]);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      tier: 'Silver',
-      contacted: false,
-      notes: ''
-    });
-    setIsModalOpen(false);
+    if (isEditMode && editingIndex >= 0) {
+      // Update existing sponsor
+      setSponsors(prev => prev.map((sponsor, index) => 
+        index === editingIndex ? sponsorData : sponsor
+      ));
+    } else {
+      // Add new sponsor
+      setSponsors(prev => [...prev, sponsorData]);
+    }
+
+    resetForm();
   };
 
   const handleCancel = () => {
+    resetForm();
+  };
+
+  const resetForm = () => {
     setFormData({
       name: '',
       email: '',
@@ -92,6 +118,94 @@ export const SponsorCRM = () => {
       notes: ''
     });
     setIsModalOpen(false);
+    setIsEditMode(false);
+    setEditingIndex(-1);
+  };
+
+  const handleEdit = (index: number) => {
+    const sponsor = sponsors[index];
+    const tierMap = {
+      '₹5K': 'Silver',
+      '₹10K': 'Gold',
+      '₹20K': 'Title'
+    };
+    
+    setFormData({
+      name: sponsor.name,
+      email: sponsor.email,
+      phone: '',
+      tier: tierMap[sponsor.tier as keyof typeof tierMap] || 'Silver',
+      contacted: sponsor.status === 'Contacted' || sponsor.status === 'In Talks' || sponsor.status === 'Closed',
+      notes: sponsor.notes
+    });
+    setEditingIndex(index);
+    setIsEditMode(true);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (index: number) => {
+    if (confirm('Are you sure you want to delete this sponsor?')) {
+      setSponsors(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleCSVImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const csv = e.target?.result as string;
+      const lines = csv.split('\n').filter(line => line.trim());
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      
+      const newSponsors = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const sponsor: any = {};
+        
+        headers.forEach((header, index) => {
+          const value = values[index] || '';
+          switch (header) {
+            case 'name':
+              sponsor.name = value;
+              break;
+            case 'email':
+              sponsor.email = value;
+              break;
+            case 'tier':
+              sponsor.tier = value.includes('₹') ? value : `₹${value}`;
+              break;
+            case 'contacted':
+              sponsor.status = value.toLowerCase() === 'true' || value.toLowerCase() === 'yes' ? 'Contacted' : 'Not Contacted';
+              break;
+            case 'notes':
+              sponsor.notes = value;
+              break;
+          }
+        });
+        
+        return {
+          name: sponsor.name || 'Unknown',
+          email: sponsor.email || '',
+          tier: sponsor.tier || '₹5K',
+          status: sponsor.status || 'Not Contacted',
+          notes: sponsor.notes || ''
+        };
+      }).filter(sponsor => sponsor.name !== 'Unknown');
+
+      setSponsors(prev => [...prev, ...newSponsors]);
+    };
+    
+    reader.readAsText(file);
+    // Reset file input
+    event.target.value = '';
+  };
+
+  const handleSampleImport = (listName: string) => {
+    const sampleData = sampleLists[listName as keyof typeof sampleLists];
+    if (sampleData) {
+      setSponsors(prev => [...prev, ...sampleData]);
+    }
   };
   return (
     <div className="space-y-12">
@@ -100,10 +214,36 @@ export const SponsorCRM = () => {
           <h1 className="text-2xl font-medium text-white mb-2">Sponsor CRM</h1>
           <p className="text-neutral-400 text-sm">Manage sponsor relationships</p>
         </div>
-        <div className="flex space-x-4">
-          <button className="px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors">
-            Import from Lists
-          </button>
+        <div className="flex flex-wrap gap-2">
+          {/* CSV Import */}
+          <label className="px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors cursor-pointer">
+            Import CSV
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleCSVImport}
+              className="hidden"
+            />
+          </label>
+
+          {/* Sample Lists Dropdown */}
+          <div className="relative">
+            <select 
+              onChange={(e) => {
+                if (e.target.value) {
+                  handleSampleImport(e.target.value);
+                  e.target.value = '';
+                }
+              }}
+              className="px-4 py-2 text-sm text-white border border-neutral-700 bg-black hover:bg-neutral-900 transition-colors appearance-none cursor-pointer"
+            >
+              <option value="">Import Sample Lists</option>
+              <option value="Hackathon Sponsors">Hackathon Sponsors</option>
+              <option value="EdTech Sponsors">EdTech Sponsors</option>
+              <option value="Startup Sponsors">Startup Sponsors</option>
+            </select>
+          </div>
+
           <button 
             onClick={() => setIsModalOpen(true)}
             className="px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
@@ -123,6 +263,7 @@ export const SponsorCRM = () => {
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Contacted</th>
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Status</th>
               <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Notes</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -149,6 +290,22 @@ export const SponsorCRM = () => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-neutral-400 text-sm max-w-xs truncate">{sponsor.notes}</td>
+                <td className="px-6 py-4">
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleEdit(index)}
+                      className="text-neutral-400 hover:text-white text-sm transition-colors"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-neutral-400 hover:text-red-400 text-sm transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -159,7 +316,9 @@ export const SponsorCRM = () => {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
           <div className="bg-black border border-white w-full max-w-md mx-4 p-8">
-            <h2 className="text-xl font-medium text-white mb-6">Add New Sponsor</h2>
+            <h2 className="text-xl font-medium text-white mb-6">
+              {isEditMode ? 'Edit Sponsor' : 'Add New Sponsor'}
+            </h2>
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -245,7 +404,7 @@ export const SponsorCRM = () => {
                   type="submit"
                   className="px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
                 >
-                  Add Sponsor
+                  {isEditMode ? 'Update Sponsor' : 'Add Sponsor'}
                 </button>
               </div>
             </form>
