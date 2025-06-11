@@ -6,9 +6,60 @@ import sgMail from "@sendgrid/mail";
 // In-memory storage for deliverables and other data
 const deliverables: any[] = [];
 const sponsors: any[] = [];
+const tiers: any[] = [];
 const settings = {
-  templates: [] as any[]
+  templates: [] as any[],
+  email: {
+    senderEmail: "samplecollege@sponzaar.com",
+    replyTo: "team@sponzaar.com",
+    orgName: "Sample College Hackathon"
+  }
 };
+
+// Mock marketplace data
+const marketplaceLists = [
+  {
+    id: "list-1",
+    title: "Top D2C Brands - Jan 2024",
+    price: "Free",
+    tags: ["consumer", "ecommerce"],
+    sponsors: [
+      { name: "Zomato", email: "partnerships@zomato.com", type: "Food Tech", location: "Gurugram" },
+      { name: "Razorpay", email: "sponsorships@razorpay.com", type: "Fintech", location: "Bangalore" },
+      { name: "Mamaearth", email: "marketing@mamaearth.in", type: "D2C Beauty", location: "Gurugram" }
+    ]
+  },
+  {
+    id: "list-2", 
+    title: "Tech Startups - Mumbai",
+    price: "₹999",
+    tags: ["tech", "startup", "mumbai"],
+    sponsors: [
+      { name: "PhonePe", email: "partnerships@phonepe.com", type: "Fintech", location: "Mumbai" },
+      { name: "Dunzo", email: "business@dunzo.com", type: "Delivery", location: "Mumbai" },
+      { name: "Dream11", email: "sponsorships@dream11.com", type: "Gaming", location: "Mumbai" }
+    ]
+  },
+  {
+    id: "list-3",
+    title: "SaaS Companies - Global",
+    price: "₹1499", 
+    tags: ["saas", "b2b", "global"],
+    sponsors: [
+      { name: "Freshworks", email: "partnerships@freshworks.com", type: "SaaS", location: "Chennai" },
+      { name: "Zoho", email: "sponsorships@zoho.com", type: "SaaS", location: "Chennai" },
+      { name: "Chargebee", email: "marketing@chargebee.com", type: "SaaS", location: "Chennai" }
+    ]
+  }
+];
+
+// Mock activity data
+const activityLog = [
+  { type: "email_sent", sponsor: "Zomato", time: "2h ago" },
+  { type: "sponsor_added", sponsor: "Razorpay", time: "1d ago" },
+  { type: "tier_created", sponsor: "Gold Sponsor", time: "2d ago" },
+  { type: "list_imported", sponsor: "Tech Startups", time: "3d ago" }
+];
 
 // Initialize SendGrid when API key is available
 function initializeSendGrid() {
@@ -288,6 +339,205 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error sending bulk emails:', error);
       res.status(500).json({ error: 'Internal server error', details: (error as Error).message });
+    }
+  });
+
+  // Marketplace routes
+  
+  // GET /api/marketplace - Get all sponsor lists from marketplace
+  app.get('/api/marketplace', (req, res) => {
+    try {
+      res.json(marketplaceLists);
+    } catch (error) {
+      console.error('Error fetching marketplace lists:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Lists management routes
+  
+  // POST /api/lists/import - Import sponsors from a list
+  app.post('/api/lists/import', (req, res) => {
+    try {
+      const { sponsors: sponsorList } = req.body;
+      
+      if (!Array.isArray(sponsorList)) {
+        return res.status(400).json({ error: 'sponsors must be an array' });
+      }
+
+      let addedCount = 0;
+      
+      sponsorList.forEach(sponsor => {
+        // Check if sponsor already exists
+        const existingSponsor = sponsors.find(s => s.email === sponsor.email);
+        if (!existingSponsor) {
+          const newSponsor = {
+            id: `sponsor-${Date.now()}-${addedCount}`,
+            name: sponsor.name,
+            email: sponsor.email,
+            status: 'Not Contacted',
+            tier: 'bronze',
+            notes: '',
+            type: sponsor.type || '',
+            location: sponsor.location || '',
+            source: 'Marketplace',
+            createdAt: new Date().toISOString()
+          };
+          
+          sponsors.push(newSponsor);
+          addedCount++;
+        }
+      });
+
+      // Add to activity log
+      activityLog.unshift({
+        type: "list_imported",
+        sponsor: `${addedCount} sponsors`,
+        time: "now"
+      });
+
+      res.json({ 
+        success: true, 
+        addedCount,
+        message: `Successfully imported ${addedCount} sponsors`
+      });
+    } catch (error) {
+      console.error('Error importing sponsors:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // GET /api/lists - Get previously imported sponsor lists
+  app.get('/api/lists', (req, res) => {
+    try {
+      const importedSponsors = sponsors.filter(sponsor => sponsor.source === 'Marketplace');
+      res.json(importedSponsors);
+    } catch (error) {
+      console.error('Error fetching imported lists:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Tiers management routes
+  
+  // GET /api/tiers - Get all sponsorship tiers
+  app.get('/api/tiers', (req, res) => {
+    try {
+      res.json(tiers);
+    } catch (error) {
+      console.error('Error fetching tiers:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // POST /api/tiers - Create new sponsorship tier
+  app.post('/api/tiers', (req, res) => {
+    try {
+      const { name, value, perks } = req.body;
+      
+      if (!name || !value) {
+        return res.status(400).json({ error: 'name and value are required' });
+      }
+
+      const newTier = {
+        id: `tier-${Date.now()}`,
+        name,
+        value: parseInt(value),
+        perks: perks || [],
+        createdAt: new Date().toISOString()
+      };
+
+      tiers.push(newTier);
+
+      // Add to activity log
+      activityLog.unshift({
+        type: "tier_created",
+        sponsor: name,
+        time: "now"
+      });
+
+      res.status(201).json(newTier);
+    } catch (error) {
+      console.error('Error creating tier:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Settings routes
+  
+  // GET /api/settings/email - Get email settings
+  app.get('/api/settings/email', (req, res) => {
+    try {
+      res.json(settings.email);
+    } catch (error) {
+      console.error('Error fetching email settings:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // POST /api/settings/email - Update email settings
+  app.post('/api/settings/email', (req, res) => {
+    try {
+      const { senderEmail, replyTo, orgName } = req.body;
+      
+      if (senderEmail) settings.email.senderEmail = senderEmail;
+      if (replyTo) settings.email.replyTo = replyTo;
+      if (orgName) settings.email.orgName = orgName;
+
+      res.json({ 
+        success: true, 
+        settings: settings.email,
+        message: 'Email settings updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating email settings:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Stats route
+  
+  // GET /api/stats - Get sponsorship statistics
+  app.get('/api/stats', (req, res) => {
+    try {
+      const totalSponsors = sponsors.length;
+      const contacted = sponsors.filter(s => s.status === 'Contacted' || s.status === 'In Progress').length;
+      const closed = sponsors.filter(s => s.status === 'Closed').length;
+      const ghosted = sponsors.filter(s => s.status === 'Ghosted').length;
+      
+      // Calculate total raised from closed sponsors
+      let totalRaised = 0;
+      sponsors.filter(s => s.status === 'Closed').forEach(sponsor => {
+        const tier = tiers.find(t => t.name.toLowerCase() === sponsor.tier.toLowerCase());
+        if (tier) {
+          totalRaised += tier.value;
+        }
+      });
+
+      const stats = {
+        totalSponsors,
+        contacted,
+        closed,
+        ghosted,
+        totalRaised: `₹${totalRaised.toLocaleString()}`
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Activity route
+  
+  // GET /api/activity - Get recent activity log
+  app.get('/api/activity', (req, res) => {
+    try {
+      res.json(activityLog.slice(0, 10)); // Return last 10 activities
+    } catch (error) {
+      console.error('Error fetching activity:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   });
 
