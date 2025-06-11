@@ -7,8 +7,6 @@ const menuItems = [
   { title: 'Sponsor CRM', path: '/crm' },
   { title: 'Deliverables', path: '/deliverables' },
   { title: 'Sponsor Lists', path: '/sponsor-lists' },
-  { title: 'Sponsorship Tiers', path: '/tiers' },
-  { title: 'Reports', path: '/reports' },
   { title: 'Settings', path: '/settings' },
 ];
 
@@ -16,13 +14,13 @@ export const Sidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="w-48 bg-sidebar-background border-r border-sidebar-border flex flex-col">
-      <div className="p-8 border-b border-sidebar-border">
-        <h1 className="text-lg font-medium text-sidebar-foreground">Sponzaar</h1>
+    <div className="w-56 bg-black border-r border-neutral-800 flex flex-col min-h-screen">
+      <div className="p-8 border-b border-neutral-800">
+        <h1 className="text-xl font-medium text-white tracking-tight">Sponzaar</h1>
       </div>
       
       <nav className="flex-1 p-6">
-        <ul className="space-y-1">
+        <ul className="space-y-2">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path;
             
@@ -30,10 +28,10 @@ export const Sidebar = () => {
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  className={`block px-3 py-2 text-sm transition-colors ${
+                  className={`block px-4 py-3 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'text-sidebar-primary font-medium'
-                      : 'text-sidebar-foreground hover:text-sidebar-primary'
+                      ? 'text-white bg-neutral-900 border border-neutral-700'
+                      : 'text-neutral-400 hover:text-white hover:bg-neutral-950'
                   }`}
                 >
                   {item.title}

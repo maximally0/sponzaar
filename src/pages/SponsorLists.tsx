@@ -1,112 +1,98 @@
 
-import React, { useState } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import React from 'react';
+import { SponsorListCard } from '../components/SponsorListCard';
 
-const sponsorData = [
+const sponsorLists = [
   {
-    name: 'Microsoft',
-    category: 'Hackathon',
-    email: 'partnerships@microsoft.com',
-    website: 'microsoft.com'
+    name: 'India Tech Hackathon Sponsors',
+    description: 'Curated list of technology companies that sponsor hackathons in India',
+    tags: ['Hackathon', 'Tech', 'India'],
+    seller: 'TechEvents',
+    price: '₹2,999',
+    count: 150
   },
   {
-    name: 'Google',
-    category: 'Hackathon',
-    email: 'devrel@google.com',
-    website: 'google.com'
+    name: 'Global EdTech Sponsors',
+    description: 'Educational technology companies interested in sponsoring academic events',
+    tags: ['EdTech', 'Education', 'Global'],
+    seller: 'EduSponsors',
+    price: '₹1,999',
+    count: 89
   },
   {
-    name: 'Red Bull',
-    category: 'Cultural Fest',
-    email: 'events@redbull.com',
-    website: 'redbull.com'
+    name: 'Cultural Fest Sponsors',
+    description: 'Brands and companies that sponsor cultural festivals and events',
+    tags: ['Cultural', 'Entertainment', 'Brands'],
+    seller: 'CulturalHub',
+    price: '₹1,499',
+    count: 75
   },
   {
-    name: 'Coca Cola',
-    category: 'Cultural Fest',
-    email: 'marketing@coca-cola.com',
-    website: 'coca-cola.com'
-  },
-  {
-    name: 'Tata Foundation',
-    category: 'NGO',
-    email: 'grants@tata.com',
-    website: 'tata.com'
-  },
-  {
-    name: 'Infosys Foundation',
-    category: 'NGO',
-    email: 'foundation@infosys.com',
-    website: 'infosys.com'
+    name: 'Startup Ecosystem Sponsors',
+    description: 'VCs, accelerators, and startup-focused companies',
+    tags: ['Startup', 'VC', 'Accelerator'],
+    seller: 'StartupDB',
+    price: '₹3,499',
+    count: 120
   },
 ];
 
-const categories = ['All', 'Hackathon', 'Cultural Fest', 'NGO'];
-
 export const SponsorLists = () => {
-  const [selectedCategory, setSelectedCategory] = useState('All');
-
-  const filteredSponsors = selectedCategory === 'All' 
-    ? sponsorData 
-    : sponsorData.filter(sponsor => sponsor.category === selectedCategory);
+  const handleImport = (listName: string) => {
+    console.log(`Importing ${listName} to CRM`);
+    // Implementation for importing to CRM
+  };
 
   return (
     <div className="space-y-12">
       <div>
-        <h1 className="text-2xl font-medium text-foreground mb-2">Sponsor Lists</h1>
-        <p className="text-muted-foreground text-sm">Discover potential sponsors by event type</p>
+        <h1 className="text-2xl font-medium text-white mb-2">Sponsor Lists</h1>
+        <p className="text-neutral-400 text-sm">Discover and import sponsor databases</p>
       </div>
 
-      <div className="flex space-x-8">
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => setSelectedCategory(category)}
-            className={`text-sm transition-colors border-b pb-2 ${
-              selectedCategory === category
-                ? 'text-foreground border-foreground font-medium'
-                : 'text-muted-foreground border-transparent hover:text-foreground'
-            }`}
-          >
-            {category}
-          </button>
+      <div className="border border-neutral-800 p-8">
+        <h2 className="text-lg font-medium text-white mb-6">Upload Your Own List</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-neutral-400 text-sm mb-3">List Name</label>
+            <input 
+              type="text" 
+              placeholder="My Sponsor List"
+              className="w-full bg-black border border-neutral-700 px-4 py-3 text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-neutral-400 text-sm mb-3">Description</label>
+            <input 
+              type="text" 
+              placeholder="Brief description of your list"
+              className="w-full bg-black border border-neutral-700 px-4 py-3 text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-neutral-400 text-sm mb-3">CSV File</label>
+            <input 
+              type="file" 
+              accept=".csv"
+              className="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:border file:border-neutral-700 file:bg-transparent file:text-neutral-400"
+            />
+          </div>
+          <div className="flex items-end">
+            <button className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors">
+              Upload List
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {sponsorLists.map((list, index) => (
+          <SponsorListCard 
+            key={index} 
+            list={list} 
+            onImport={() => handleImport(list.name)}
+          />
         ))}
-      </div>
-
-      <div className="border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-border">
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Sponsor Name</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Category</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Contact Email</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Website</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredSponsors.map((sponsor, index) => (
-              <TableRow key={index} className="border-b border-border last:border-b-0 hover:bg-accent/20">
-                <TableCell className="text-foreground px-6 py-4">{sponsor.name}</TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className="text-muted-foreground text-sm">
-                    {sponsor.category}
-                  </span>
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm px-6 py-4">{sponsor.email}</TableCell>
-                <TableCell className="px-6 py-4">
-                  <a 
-                    href={`https://${sponsor.website}`} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-muted-foreground hover:text-foreground transition-colors text-sm"
-                  >
-                    {sponsor.website}
-                  </a>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
       </div>
     </div>
   );

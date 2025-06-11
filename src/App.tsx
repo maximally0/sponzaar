@@ -9,8 +9,6 @@ import { Dashboard } from "./pages/Dashboard";
 import { SponsorCRM } from "./pages/SponsorCRM";
 import { Deliverables } from "./pages/Deliverables";
 import { SponsorLists } from "./pages/SponsorLists";
-import { SponsorshipTiers } from "./pages/SponsorshipTiers";
-import { Reports } from "./pages/Reports";
 import { Settings } from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -28,8 +26,6 @@ const App = () => (
             <Route path="crm" element={<SponsorCRM />} />
             <Route path="deliverables" element={<Deliverables />} />
             <Route path="sponsor-lists" element={<SponsorLists />} />
-            <Route path="tiers" element={<SponsorshipTiers />} />
-            <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
           </Route>
           <Route path="*" element={<NotFound />} />

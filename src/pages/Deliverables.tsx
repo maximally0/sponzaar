@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { DeliverableRow } from '../components/DeliverableRow';
 
 const deliverables = [
   {
@@ -33,55 +33,56 @@ const deliverables = [
   },
 ];
 
+const dueSoon = deliverables.filter(d => d.status === 'Pending').slice(0, 2);
+
 export const Deliverables = () => {
   return (
     <div className="space-y-12">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-medium text-foreground mb-2">Deliverables</h1>
-          <p className="text-muted-foreground text-sm">Track sponsor commitments</p>
+          <h1 className="text-2xl font-medium text-white mb-2">Deliverables</h1>
+          <p className="text-neutral-400 text-sm">Track sponsor commitments</p>
         </div>
-        <button className="border border-border px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+        <button className="px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors">
           Add Deliverable
         </button>
       </div>
 
-      <div className="border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b border-border">
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Sponsor Name</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Deliverable Type</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Due Date</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Status</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Proof Upload</TableHead>
-              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Notes</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {deliverables.map((deliverable, index) => (
-              <TableRow key={index} className="border-b border-border last:border-b-0 hover:bg-accent/20">
-                <TableCell className="text-foreground px-6 py-4">{deliverable.sponsorName}</TableCell>
-                <TableCell className="text-muted-foreground text-sm px-6 py-4">{deliverable.type}</TableCell>
-                <TableCell className="text-muted-foreground text-sm px-6 py-4">{deliverable.dueDate}</TableCell>
-                <TableCell className="px-6 py-4">
-                  <span className={`text-xs ${
-                    deliverable.status === 'Done' ? 'text-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {deliverable.status}
-                  </span>
-                </TableCell>
-                <TableCell className="px-6 py-4">
-                  <input 
-                    type="file" 
-                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:border-0 file:bg-transparent file:text-muted-foreground"
-                  />
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm px-6 py-4">{deliverable.notes}</TableCell>
-              </TableRow>
+      {dueSoon.length > 0 && (
+        <div className="border border-neutral-800 p-6">
+          <h2 className="text-lg font-medium text-white mb-4">Due This Week</h2>
+          <div className="space-y-2">
+            {dueSoon.map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b border-neutral-800 last:border-b-0">
+                <div>
+                  <span className="text-white font-medium">{item.sponsorName}</span>
+                  <span className="text-neutral-400 ml-2">— {item.type}</span>
+                </div>
+                <span className="text-neutral-500 text-sm font-mono">{item.dueDate}</span>
+              </div>
             ))}
-          </TableBody>
-        </Table>
+          </div>
+        </div>
+      )}
+
+      <div className="border border-neutral-800">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-neutral-800">
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Sponsor</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Deliverable</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Due Date</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Status</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Proof</th>
+              <th className="text-left px-6 py-4 text-neutral-400 text-xs font-medium uppercase tracking-wider">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {deliverables.map((deliverable, index) => (
+              <DeliverableRow key={index} deliverable={deliverable} />
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
