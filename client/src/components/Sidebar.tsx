@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'wouter';
 
 const menuItems = [
   { title: 'Dashboard', path: '/' },
@@ -11,7 +11,7 @@ const menuItems = [
 ];
 
 export const Sidebar = () => {
-  const location = useLocation();
+  const [location] = useLocation();
 
   return (
     <div className="w-56 bg-black border-r border-neutral-800 flex flex-col min-h-screen">
@@ -22,7 +22,7 @@ export const Sidebar = () => {
       <nav className="flex-1 p-6">
         <ul className="space-y-2">
           {menuItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const isActive = location === item.path;
             
             return (
               <li key={item.path}>
