@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '../components/ui/card';
 
@@ -17,66 +18,54 @@ const recentActivity = [
 
 export const Dashboard = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's your sponsorship overview.</p>
+        <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Dashboard</h1>
+        <p className="text-muted-foreground text-sm font-light">Overview of sponsorship activities</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-muted-foreground text-sm">{stat.title}</p>
-                  <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
-                </div>
-                <span className={`text-sm px-2 py-1 rounded ${
-                  stat.change.startsWith('+') ? 'text-green-400 bg-green-900' : 'text-red-400 bg-red-900'
-                }`}>
-                  {stat.change}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+          <div key={index} className="bg-card border border-border p-6">
+            <div className="space-y-2">
+              <p className="text-muted-foreground text-xs uppercase tracking-wider font-light">{stat.title}</p>
+              <p className="text-2xl font-light text-foreground">{stat.value}</p>
+              <p className="text-muted-foreground text-xs font-light">{stat.change}</p>
+            </div>
+          </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex justify-between items-center py-2">
-                  <div>
-                    <p className="text-muted-foreground">{activity.action}</p>
-                    <p className="text-blue-400 text-sm">{activity.sponsor}</p>
-                  </div>
-                  <span className="text-muted-foreground text-sm">{activity.time}</span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="bg-card border border-border p-6">
+          <h2 className="text-lg font-light text-foreground mb-6 tracking-wide">Recent Activity</h2>
+          <div className="space-y-4">
+            {recentActivity.map((activity, index) => (
+              <div key={index} className="flex justify-between items-start py-3 border-b border-border last:border-b-0">
+                <div className="space-y-1">
+                  <p className="text-sm text-foreground font-light">{activity.action}</p>
+                  <p className="text-xs text-muted-foreground">{activity.sponsor}</p>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <span className="text-xs text-muted-foreground font-light">{activity.time}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Quick Actions</h2>
-            <div className="space-y-3">
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors">
-                Add New Sponsor
-              </button>
-              <button className="w-full bg-muted hover:bg-muted/80 text-foreground py-2 px-4 rounded-lg transition-colors">
-                Generate Report
-              </button>
-              <button className="w-full bg-muted hover:bg-muted/80 text-foreground py-2 px-4 rounded-lg transition-colors">
-                View All Deliverables
-              </button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-card border border-border p-6">
+          <h2 className="text-lg font-light text-foreground mb-6 tracking-wide">Quick Actions</h2>
+          <div className="space-y-4">
+            <button className="w-full text-left py-3 text-sm text-foreground font-light hover:text-muted-foreground transition-colors border-b border-border">
+              Add New Sponsor
+            </button>
+            <button className="w-full text-left py-3 text-sm text-foreground font-light hover:text-muted-foreground transition-colors border-b border-border">
+              Generate Report
+            </button>
+            <button className="w-full text-left py-3 text-sm text-foreground font-light hover:text-muted-foreground transition-colors">
+              View All Deliverables
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

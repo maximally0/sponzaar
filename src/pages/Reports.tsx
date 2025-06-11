@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '../components/ui/card';
 
@@ -18,86 +19,78 @@ const reportData = {
 
 export const Reports = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Reports</h1>
-          <p className="text-muted-foreground">Auto-generated sponsorship reports and analytics.</p>
+          <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Reports</h1>
+          <p className="text-muted-foreground text-sm font-light">Sponsorship analytics</p>
         </div>
-        <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">
+        <button className="text-foreground text-sm font-light hover:text-muted-foreground transition-colors border-b border-transparent hover:border-muted-foreground">
           Export as PDF
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Summary</h2>
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Total Amount Raised:</span>
-                <span className="text-green-400 font-semibold text-xl">{reportData.totalAmount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Number of Sponsors:</span>
-                <span className="text-foreground font-semibold">{reportData.totalSponsors}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Average per Sponsor:</span>
-                <span className="text-foreground font-semibold">₹19,583</span>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="bg-card border border-border p-6">
+          <h2 className="text-lg font-light text-foreground mb-6 tracking-wide">Summary</h2>
+          <div className="space-y-6">
+            <div className="flex justify-between border-b border-border pb-4">
+              <span className="text-muted-foreground text-sm">Total Amount Raised</span>
+              <span className="text-foreground font-light text-lg">{reportData.totalAmount}</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex justify-between border-b border-border pb-4">
+              <span className="text-muted-foreground text-sm">Number of Sponsors</span>
+              <span className="text-foreground font-light">{reportData.totalSponsors}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground text-sm">Average per Sponsor</span>
+              <span className="text-foreground font-light">₹19,583</span>
+            </div>
+          </div>
+        </div>
 
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-4">Tier-wise Breakdown</h2>
-            <div className="space-y-3">
-              {reportData.tierBreakdown.map((tier, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-muted rounded">
-                  <div>
-                    <div className="text-foreground font-medium">{tier.tier}</div>
-                    <div className="text-muted-foreground text-sm">{tier.count} sponsors</div>
-                  </div>
-                  <div className="text-blue-400 font-semibold">{tier.amount}</div>
+        <div className="bg-card border border-border p-6">
+          <h2 className="text-lg font-light text-foreground mb-6 tracking-wide">Tier-wise Breakdown</h2>
+          <div className="space-y-4">
+            {reportData.tierBreakdown.map((tier, index) => (
+              <div key={index} className="flex justify-between items-center py-3 border-b border-border last:border-b-0">
+                <div>
+                  <div className="text-foreground font-light">{tier.tier}</div>
+                  <div className="text-muted-foreground text-sm">{tier.count} sponsors</div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Monthly Progress</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {reportData.monthlyProgress.map((month, index) => (
-              <div key={index} className="bg-muted p-4 rounded-lg text-center">
-                <div className="text-muted-foreground text-sm">{month.month}</div>
-                <div className="text-2xl font-bold text-foreground mt-1">{month.amount}</div>
+                <div className="text-foreground font-light">{tier.amount}</div>
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Report Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors">
-              Generate Detailed Report
-            </button>
-            <button className="bg-muted hover:bg-muted/80 text-foreground py-3 px-4 rounded-lg transition-colors">
-              Email Report to Team
-            </button>
-            <button className="bg-purple-600 hover:bg-purple-700 text-white py-3 px-4 rounded-lg transition-colors">
-              Schedule Auto Reports
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="bg-card border border-border p-6">
+        <h2 className="text-lg font-light text-foreground mb-6 tracking-wide">Monthly Progress</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {reportData.monthlyProgress.map((month, index) => (
+            <div key={index} className="bg-muted p-4 border border-border">
+              <div className="text-muted-foreground text-sm mb-2">{month.month}</div>
+              <div className="text-xl font-light text-foreground">{month.amount}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-card border border-border p-6">
+        <h2 className="text-lg font-light text-foreground mb-6 tracking-wide">Report Actions</h2>
+        <div className="space-y-4">
+          <button className="w-full text-left py-3 text-sm text-foreground font-light hover:text-muted-foreground transition-colors border-b border-border">
+            Generate Detailed Report
+          </button>
+          <button className="w-full text-left py-3 text-sm text-foreground font-light hover:text-muted-foreground transition-colors border-b border-border">
+            Email Report to Team
+          </button>
+          <button className="w-full text-left py-3 text-sm text-foreground font-light hover:text-muted-foreground transition-colors">
+            Schedule Auto Reports
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

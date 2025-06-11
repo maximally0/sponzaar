@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
@@ -43,72 +44,55 @@ const sponsors = [
 ];
 
 export const SponsorCRM = () => {
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'Closed': return 'default';
-      case 'In Talks': return 'secondary';
-      case 'Contacted': return 'outline';
-      default: return 'outline';
-    }
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Sponsor CRM</h1>
-          <p className="text-muted-foreground">Manage your sponsor relationships and communications.</p>
+          <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Sponsor CRM</h1>
+          <p className="text-muted-foreground text-sm font-light">Manage sponsor relationships</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+        <button className="text-foreground text-sm font-light hover:text-muted-foreground transition-colors border-b border-transparent hover:border-muted-foreground">
           Add Sponsor
         </button>
       </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sponsor Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Tier</TableHead>
-                <TableHead>Contacted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
+      <div className="bg-card border border-border">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b border-border">
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Sponsor Name</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Email</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Phone</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Tier</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Contacted</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Status</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Notes</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {sponsors.map((sponsor, index) => (
+              <TableRow key={index} className="border-b border-border last:border-b-0">
+                <TableCell className="text-foreground font-light">{sponsor.name}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">{sponsor.email}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">{sponsor.phone}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">{sponsor.tier}</TableCell>
+                <TableCell>
+                  <input 
+                    type="checkbox" 
+                    checked={sponsor.contacted}
+                    className="bg-transparent border-border"
+                    readOnly
+                  />
+                </TableCell>
+                <TableCell>
+                  <span className="text-xs font-light text-muted-foreground">{sponsor.status}</span>
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">{sponsor.notes}</TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sponsors.map((sponsor, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="font-medium text-foreground">{sponsor.name}</div>
-                  </TableCell>
-                  <TableCell>{sponsor.email}</TableCell>
-                  <TableCell>{sponsor.phone}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{sponsor.tier}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <input 
-                      type="checkbox" 
-                      checked={sponsor.contacted}
-                      className="rounded bg-muted border-border"
-                      readOnly
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusVariant(sponsor.status)}>
-                      {sponsor.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{sponsor.notes}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

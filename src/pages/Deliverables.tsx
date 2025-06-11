@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
@@ -36,56 +37,54 @@ const deliverables = [
 
 export const Deliverables = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Deliverables</h1>
-          <p className="text-muted-foreground">Track and manage sponsor deliverables and commitments.</p>
+          <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Deliverables</h1>
+          <p className="text-muted-foreground text-sm font-light">Track sponsor commitments</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+        <button className="text-foreground text-sm font-light hover:text-muted-foreground transition-colors border-b border-transparent hover:border-muted-foreground">
           Add Deliverable
         </button>
       </div>
 
-      <Card>
-        <CardContent className="p-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Sponsor Name</TableHead>
-                <TableHead>Deliverable Type</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Proof Upload</TableHead>
-                <TableHead>Notes</TableHead>
+      <div className="bg-card border border-border">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b border-border">
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Sponsor Name</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Deliverable Type</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Due Date</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Status</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Proof Upload</TableHead>
+              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Notes</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {deliverables.map((deliverable, index) => (
+              <TableRow key={index} className="border-b border-border last:border-b-0">
+                <TableCell className="text-foreground font-light">{deliverable.sponsorName}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">{deliverable.type}</TableCell>
+                <TableCell className="text-muted-foreground text-sm">{deliverable.dueDate}</TableCell>
+                <TableCell>
+                  <span className={`text-xs font-light px-2 py-1 ${
+                    deliverable.status === 'Done' ? 'text-foreground' : 'text-muted-foreground'
+                  }`}>
+                    {deliverable.status}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <input 
+                    type="file" 
+                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:border-0 file:bg-transparent file:text-muted-foreground file:font-light"
+                  />
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">{deliverable.notes}</TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {deliverables.map((deliverable, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="font-medium text-foreground">{deliverable.sponsorName}</div>
-                  </TableCell>
-                  <TableCell>{deliverable.type}</TableCell>
-                  <TableCell>{deliverable.dueDate}</TableCell>
-                  <TableCell>
-                    <Badge variant={deliverable.status === 'Done' ? 'default' : 'secondary'}>
-                      {deliverable.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <input 
-                      type="file" 
-                      className="text-sm text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-muted file:text-foreground"
-                    />
-                  </TableCell>
-                  <TableCell>{deliverable.notes}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

@@ -23,14 +23,13 @@ export const Sidebar = () => {
   const location = useLocation();
 
   return (
-    <div className="w-64 bg-gray-800 border-r border-gray-700 flex flex-col">
-      <div className="p-6 border-b border-gray-700">
-        <h1 className="text-2xl font-bold text-white">Sponzaar</h1>
-        <p className="text-gray-400 text-sm mt-1">Sponsor Management</p>
+    <div className="w-56 bg-sidebar-background border-r border-sidebar-border flex flex-col">
+      <div className="p-6 border-b border-sidebar-border">
+        <h1 className="text-lg font-light text-sidebar-foreground tracking-wide">Sponzaar</h1>
       </div>
       
       <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -39,14 +38,14 @@ export const Sidebar = () => {
               <li key={item.path}>
                 <Link
                   to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-3 px-3 py-2 text-sm transition-colors ${
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-sidebar-accent text-sidebar-primary'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
                   }`}
                 >
-                  <Icon size={20} />
-                  <span>{item.title}</span>
+                  <Icon size={16} />
+                  <span className="font-light">{item.title}</span>
                 </Link>
               </li>
             );
