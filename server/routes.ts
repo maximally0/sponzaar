@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // POST /api/send-email - Send email using SendGrid
   app.post('/api/send-email', async (req, res) => {
     try {
-      const { to, subject, html } = req.body;
+      const { to, subject, html, from } = req.body;
       
       if (!to || !subject || !html) {
         return res.status(400).json({ error: 'to, subject, and html are required' });
@@ -111,16 +111,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const msg = {
         to,
-        from: 'noreply@sponzaar.com', // Use a verified sender email
+        from: from || 'noreply@sponzaar.com', // Use provided sender or default
         subject,
         html
       };
 
       await sgMail.send(msg);
       res.json({ success: true, message: 'Email sent successfully' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending email:', error);
-      res.status(500).json({ error: 'Failed to send email', details: error.message });
+      
+      // Provide more specific error messages
+      let errorMessage = 'Failed to send email';
+      if (error.code === 403) {
+        errorMessage = 'Sender email not verified with SendGrid. Please verify your sender email address in SendGrid dashboard.';
+      } else if (error.code === 401) {
+        errorMessage = 'Invalid SendGrid API key';
+      }
+      
+      res.status(500).json({ 
+        error: errorMessage, 
+        details: error.message,
+        sendgridError: error.response?.body?.errors || null
+      });
     }
   });
 
@@ -246,7 +259,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           sponsor.contactedAt = new Date().toISOString();
           
           emailsSent++;
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to send email to ${sponsor.email}:`, error);
           errors.push({ sponsor: sponsor.email, error: error.message });
         }
@@ -258,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalSponsors: uncontactedSponsors.length,
         errors: errors.length > 0 ? errors : undefined
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending bulk emails:', error);
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
