@@ -9,15 +9,23 @@ import { useAuth } from "../contexts/AuthContext";
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [, setLocation] = useLocation();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt:", { email, password });
+    setIsLoading(true);
     
-    // For now, just log the values
-    // Later this will call the actual login API
-    await login(email, password);
+    try {
+      console.log("Login attempt:", { email, password });
+      await login(email, password);
+      setLocation("/"); // Redirect to dashboard after successful login
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,8 +63,8 @@ export const Login = () => {
                 className="w-full"
               />
             </div>
-            <Button type="submit" className="w-full">
-              Login
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Logging in..." : "Login"}
             </Button>
           </form>
         </CardContent>
