@@ -12,7 +12,7 @@ const stats = [
 const quickLinks = [
   { title: 'Add New Sponsor', path: '/crm' },
   { title: 'Import Sponsor List', path: '/sponsor-lists' },
-  { title: 'View Deliverables', path: '/deliverables' },
+  { title: 'Browse Marketplace', path: '/sponsor-marketplace' },
 ];
 
 // Sample data for fundraising progress
