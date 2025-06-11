@@ -9,6 +9,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { SponsorCRM } from "./pages/SponsorCRM";
 import { Deliverables } from "./pages/Deliverables";
 import { SponsorLists } from "./pages/SponsorLists";
+import { SponsorListMarketplace } from "./pages/SponsorListMarketplace";
 import { Settings } from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/crm" component={SponsorCRM} />
             <Route path="/deliverables" component={Deliverables} />
             <Route path="/sponsor-lists" component={SponsorLists} />
+            <Route path="/sponsor-marketplace" component={SponsorListMarketplace} />
             <Route path="/settings" component={Settings} />
             <Route component={NotFound} />
           </Switch>

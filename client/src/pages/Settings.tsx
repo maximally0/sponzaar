@@ -56,6 +56,7 @@ export const Settings = () => {
     minimumAmount: '',
     description: ''
   });
+  const [fromEmail, setFromEmail] = useState('samplecollege@sponzaar.com');
 
   const handleTierInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -117,6 +118,16 @@ export const Settings = () => {
     setEditingTierIndex(-1);
   };
 
+  const handleTestEmail = () => {
+    alert(`Test email would be sent from: ${fromEmail}`);
+    console.log('Test email functionality triggered for:', fromEmail);
+  };
+
+  const handleSaveEmail = () => {
+    localStorage.setItem('fromEmail', fromEmail);
+    alert('Email configuration saved!');
+  };
+
   return (
     <div className="space-y-12">
       <div>
@@ -155,22 +166,39 @@ export const Settings = () => {
 
       <div className="border border-neutral-800 p-8">
         <h2 className="text-lg font-medium text-white mb-8">Email Configuration</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <label className="block text-neutral-400 text-sm mb-3">SendGrid From Email</label>
-            <input 
-              type="email" 
-              defaultValue="samplecollege@sponzaar.com"
-              className="w-full bg-black border border-neutral-700 px-4 py-3 text-white"
-            />
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label className="block text-neutral-400 text-sm mb-3">Default "From" Email Address</label>
+              <input 
+                type="email" 
+                value={fromEmail}
+                onChange={(e) => setFromEmail(e.target.value)}
+                className="w-full bg-black border border-neutral-700 px-4 py-3 text-white focus:border-neutral-500 focus:outline-none"
+                placeholder="e.g., samplecollege@sponzaar.com"
+              />
+            </div>
+            <div>
+              <label className="block text-neutral-400 text-sm mb-3">Current Configured Sender</label>
+              <div className="w-full bg-neutral-950 border border-neutral-800 px-4 py-3 text-neutral-300">
+                {fromEmail}
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-neutral-400 text-sm mb-3">Email Signature</label>
-            <textarea 
-              rows={4}
-              defaultValue="Best regards,&#10;TechFest 2024 Team&#10;Sample College"
-              className="w-full bg-black border border-neutral-700 px-4 py-3 text-white"
-            />
+          
+          <div className="flex space-x-4">
+            <button 
+              onClick={handleTestEmail}
+              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
+            >
+              Test Email
+            </button>
+            <button 
+              onClick={handleSaveEmail}
+              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
+            >
+              Save Email Configuration
+            </button>
           </div>
         </div>
       </div>

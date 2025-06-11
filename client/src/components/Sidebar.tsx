@@ -7,6 +7,7 @@ const menuItems = [
   { title: 'Sponsor CRM', path: '/crm' },
   { title: 'Deliverables', path: '/deliverables' },
   { title: 'Sponsor Lists', path: '/sponsor-lists' },
+  { title: 'Marketplace', path: '/sponsor-marketplace' },
   { title: 'Settings', path: '/settings' },
 ];
 
