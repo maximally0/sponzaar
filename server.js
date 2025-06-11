@@ -133,6 +133,71 @@ app.get('/api/deliverables', (req, res) => {
   }
 });
 
+app.post('/api/deliverables', async (req, res) => {
+  try {
+    const { id, sponsorId, title, dueDate, status } = req.body;
+    
+    if (!id || !sponsorId || !title || !dueDate) {
+      return res.status(400).json({ error: 'id, sponsorId, title, and dueDate are required' });
+    }
+
+    const newDeliverable = {
+      id,
+      sponsorId,
+      title,
+      dueDate,
+      status: status || 'pending',
+      createdAt: new Date().toISOString()
+    };
+
+    db.data.deliverables.push(newDeliverable);
+    await db.write();
+
+    res.status(201).json(newDeliverable);
+  } catch (error) {
+    console.error('Error creating deliverable:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/sponsors/:id/deliverables', (req, res) => {
+  try {
+    const { id } = req.params;
+    const deliverables = db.data.deliverables.filter(deliverable => deliverable.sponsorId === id);
+    res.json(deliverables);
+  } catch (error) {
+    console.error('Error fetching sponsor deliverables:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.patch('/api/deliverables/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const deliverableIndex = db.data.deliverables.findIndex(deliverable => deliverable.id === id);
+    
+    if (deliverableIndex === -1) {
+      return res.status(404).json({ error: 'Deliverable not found' });
+    }
+
+    // Update the deliverable with new data
+    db.data.deliverables[deliverableIndex] = {
+      ...db.data.deliverables[deliverableIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    await db.write();
+
+    res.json(db.data.deliverables[deliverableIndex]);
+  } catch (error) {
+    console.error('Error updating deliverable:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/settings', (req, res) => {
   try {
     const settings = db.data.settings;
