@@ -1,9 +1,21 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import sgMail from "@sendgrid/mail";
 
-// In-memory storage for deliverables
+// In-memory storage for deliverables and other data
 const deliverables: any[] = [];
+const sponsors: any[] = [];
+const settings = {
+  templates: [] as any[]
+};
+
+// Initialize SendGrid
+if (!process.env.SENDGRID_API_KEY) {
+  console.warn("SENDGRID_API_KEY not found. Email functionality will not work.");
+} else {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Deliverables routes
@@ -79,6 +91,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error updating deliverable:', error);
       res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Email routes
+  
+  // POST /api/send-email - Send email using SendGrid
+  app.post('/api/send-email', async (req, res) => {
+    try {
+      const { to, subject, html } = req.body;
+      
+      if (!to || !subject || !html) {
+        return res.status(400).json({ error: 'to, subject, and html are required' });
+      }
+
+      if (!process.env.SENDGRID_API_KEY) {
+        return res.status(500).json({ error: 'SendGrid API key not configured' });
+      }
+
+      const msg = {
+        to,
+        from: 'noreply@sponzaar.com', // Use a verified sender email
+        subject,
+        html
+      };
+
+      await sgMail.send(msg);
+      res.json({ success: true, message: 'Email sent successfully' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: 'Failed to send email', details: error.message });
+    }
+  });
+
+  // Template management routes
+  
+  // GET /api/templates - Get all email templates
+  app.get('/api/templates', (req, res) => {
+    try {
+      res.json(settings.templates);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // POST /api/templates - Create new email template
+  app.post('/api/templates', (req, res) => {
+    try {
+      const { id, name, subject, html } = req.body;
+      
+      if (!id || !name || !subject || !html) {
+        return res.status(400).json({ error: 'id, name, subject, and html are required' });
+      }
+
+      const newTemplate = {
+        id,
+        name,
+        subject,
+        html,
+        createdAt: new Date().toISOString()
+      };
+
+      settings.templates.push(newTemplate);
+      res.status(201).json(newTemplate);
+    } catch (error) {
+      console.error('Error creating template:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // Sponsor management routes
+  
+  // GET /api/sponsors - Get all sponsors
+  app.get('/api/sponsors', (req, res) => {
+    try {
+      res.json(sponsors);
+    } catch (error) {
+      console.error('Error fetching sponsors:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // POST /api/sponsors - Create new sponsor
+  app.post('/api/sponsors', (req, res) => {
+    try {
+      const { id, name, email, status, tier, notes } = req.body;
+      
+      if (!id || !name || !email) {
+        return res.status(400).json({ error: 'id, name, and email are required' });
+      }
+
+      const newSponsor = {
+        id,
+        name,
+        email,
+        status: status || 'Not Contacted',
+        tier: tier || 'bronze',
+        notes: notes || '',
+        createdAt: new Date().toISOString()
+      };
+
+      sponsors.push(newSponsor);
+      res.status(201).json(newSponsor);
+    } catch (error) {
+      console.error('Error creating sponsor:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // POST /api/send-to-uncontacted - Send emails to all uncontacted sponsors
+  app.post('/api/send-to-uncontacted', async (req, res) => {
+    try {
+      const { templateId, sender } = req.body;
+      
+      if (!templateId || !sender) {
+        return res.status(400).json({ error: 'templateId and sender are required' });
+      }
+
+      if (!process.env.SENDGRID_API_KEY) {
+        return res.status(500).json({ error: 'SendGrid API key not configured' });
+      }
+
+      // Find the template
+      const template = settings.templates.find(t => t.id === templateId);
+      if (!template) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      // Get uncontacted sponsors
+      const uncontactedSponsors = sponsors.filter(sponsor => sponsor.status === 'Not Contacted');
+      
+      if (uncontactedSponsors.length === 0) {
+        return res.json({ success: true, emailsSent: 0, message: 'No uncontacted sponsors found' });
+      }
+
+      let emailsSent = 0;
+      const errors = [];
+
+      // Send emails to each uncontacted sponsor
+      for (const sponsor of uncontactedSponsors) {
+        try {
+          const msg = {
+            to: sponsor.email,
+            from: sender,
+            subject: template.subject,
+            html: template.html.replace(/{{name}}/g, sponsor.name) // Basic template replacement
+          };
+
+          await sgMail.send(msg);
+          
+          // Update sponsor status to Contacted
+          sponsor.status = 'Contacted';
+          sponsor.contactedAt = new Date().toISOString();
+          
+          emailsSent++;
+        } catch (error) {
+          console.error(`Failed to send email to ${sponsor.email}:`, error);
+          errors.push({ sponsor: sponsor.email, error: error.message });
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        emailsSent, 
+        totalSponsors: uncontactedSponsors.length,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error('Error sending bulk emails:', error);
+      res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   });
 
