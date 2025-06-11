@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { Card } from '../components/ui/Card';
-import { Table, TableRow, TableCell } from '../components/ui/Table';
-import { Badge } from '../components/ui/Badge';
+import { Card, CardContent } from '../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { Badge } from '../components/ui/badge';
 
 const sponsors = [
   {
@@ -46,10 +45,10 @@ const sponsors = [
 export const SponsorCRM = () => {
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case 'Closed': return 'success';
-      case 'In Talks': return 'warning';
-      case 'Contacted': return 'default';
-      default: return 'default';
+      case 'Closed': return 'default';
+      case 'In Talks': return 'secondary';
+      case 'Contacted': return 'outline';
+      default: return 'outline';
     }
   };
 
@@ -57,8 +56,8 @@ export const SponsorCRM = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Sponsor CRM</h1>
-          <p className="text-gray-400">Manage your sponsor relationships and communications.</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Sponsor CRM</h1>
+          <p className="text-muted-foreground">Manage your sponsor relationships and communications.</p>
         </div>
         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
           Add Sponsor
@@ -66,34 +65,49 @@ export const SponsorCRM = () => {
       </div>
 
       <Card>
-        <Table headers={['Sponsor Name', 'Email', 'Phone', 'Tier', 'Contacted', 'Status', 'Notes']}>
-          {sponsors.map((sponsor, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <div className="font-medium text-white">{sponsor.name}</div>
-              </TableCell>
-              <TableCell>{sponsor.email}</TableCell>
-              <TableCell>{sponsor.phone}</TableCell>
-              <TableCell>
-                <Badge variant="default">{sponsor.tier}</Badge>
-              </TableCell>
-              <TableCell>
-                <input 
-                  type="checkbox" 
-                  checked={sponsor.contacted}
-                  className="rounded bg-gray-700 border-gray-600"
-                  readOnly
-                />
-              </TableCell>
-              <TableCell>
-                <Badge variant={getStatusVariant(sponsor.status)}>
-                  {sponsor.status}
-                </Badge>
-              </TableCell>
-              <TableCell>{sponsor.notes}</TableCell>
-            </TableRow>
-          ))}
-        </Table>
+        <CardContent className="p-6">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sponsor Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Tier</TableHead>
+                <TableHead>Contacted</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Notes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sponsors.map((sponsor, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <div className="font-medium text-foreground">{sponsor.name}</div>
+                  </TableCell>
+                  <TableCell>{sponsor.email}</TableCell>
+                  <TableCell>{sponsor.phone}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{sponsor.tier}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <input 
+                      type="checkbox" 
+                      checked={sponsor.contacted}
+                      className="rounded bg-muted border-border"
+                      readOnly
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getStatusVariant(sponsor.status)}>
+                      {sponsor.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{sponsor.notes}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
       </Card>
     </div>
   );

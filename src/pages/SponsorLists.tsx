@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
-import { Card } from '../components/ui/Card';
-import { Table, TableRow, TableCell } from '../components/ui/Table';
+import { Card, CardContent } from '../components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 
 const sponsorData = [
   {
@@ -54,8 +53,8 @@ export const SponsorLists = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Sponsor Lists</h1>
-        <p className="text-gray-400">Discover potential sponsors filtered by event type.</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Sponsor Lists</h1>
+        <p className="text-muted-foreground">Discover potential sponsors filtered by event type.</p>
       </div>
 
       <div className="flex space-x-4">
@@ -66,7 +65,7 @@ export const SponsorLists = () => {
             className={`px-4 py-2 rounded-lg transition-colors ${
               selectedCategory === category
                 ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
             }`}
           >
             {category}
@@ -75,31 +74,43 @@ export const SponsorLists = () => {
       </div>
 
       <Card>
-        <Table headers={['Sponsor Name', 'Category', 'Contact Email', 'Website']}>
-          {filteredSponsors.map((sponsor, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <div className="font-medium text-white">{sponsor.name}</div>
-              </TableCell>
-              <TableCell>
-                <span className="px-2 py-1 bg-gray-700 text-gray-300 rounded text-sm">
-                  {sponsor.category}
-                </span>
-              </TableCell>
-              <TableCell>{sponsor.email}</TableCell>
-              <TableCell>
-                <a 
-                  href={`https://${sponsor.website}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:text-blue-300"
-                >
-                  {sponsor.website}
-                </a>
-              </TableCell>
-            </TableRow>
-          ))}
-        </Table>
+        <CardContent className="p-6">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sponsor Name</TableHead>
+                <TableHead>Category</TableHead>
+                <TableHead>Contact Email</TableHead>
+                <TableHead>Website</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSponsors.map((sponsor, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <div className="font-medium text-foreground">{sponsor.name}</div>
+                  </TableCell>
+                  <TableCell>
+                    <span className="px-2 py-1 bg-muted text-muted-foreground rounded text-sm">
+                      {sponsor.category}
+                    </span>
+                  </TableCell>
+                  <TableCell>{sponsor.email}</TableCell>
+                  <TableCell>
+                    <a 
+                      href={`https://${sponsor.website}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      {sponsor.website}
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
       </Card>
     </div>
   );
