@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Router, Route, Switch } from "wouter";
+import { SponsorListProvider } from "./hooks/useSponsorListStore";
 import { Layout } from "./components/Layout";
 import { Dashboard } from "./pages/Dashboard";
 import { SponsorCRM } from "./pages/SponsorCRM";
@@ -17,22 +18,24 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <Router>
-        <Layout>
-          <Switch>
-            <Route path="/" component={Dashboard} />
-            <Route path="/crm" component={SponsorCRM} />
-            <Route path="/sponsor-lists" component={SponsorLists} />
-            <Route path="/sponsor-marketplace" component={SponsorListMarketplace} />
-            <Route path="/settings" component={Settings} />
-            <Route component={NotFound} />
-          </Switch>
-        </Layout>
-      </Router>
-    </TooltipProvider>
+    <SponsorListProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <Router>
+          <Layout>
+            <Switch>
+              <Route path="/" component={Dashboard} />
+              <Route path="/crm" component={SponsorCRM} />
+              <Route path="/sponsor-lists" component={SponsorLists} />
+              <Route path="/sponsor-marketplace" component={SponsorListMarketplace} />
+              <Route path="/settings" component={Settings} />
+              <Route component={NotFound} />
+            </Switch>
+          </Layout>
+        </Router>
+      </TooltipProvider>
+    </SponsorListProvider>
   </QueryClientProvider>
 );
 
