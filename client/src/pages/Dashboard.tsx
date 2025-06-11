@@ -3,9 +3,10 @@ import { Link } from 'wouter';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 const stats = [
-  { title: 'Total Sponsors', value: '48' },
-  { title: 'Total Raised', value: '₹2,35,000' },
-  { title: 'Deliverables Due', value: '7' },
+  { title: 'Total Sponsors Contacted', value: '48', description: 'Companies reached out to' },
+  { title: 'Total Sponsors Closed', value: '15', description: 'Confirmed sponsorships' },
+  { title: '₹ Amount Raised', value: '₹2,35,000', description: 'From closed sponsors' },
+  { title: 'Deliverables Completed', value: '71%', description: '5 of 7 deliverables done', showProgress: true },
 ];
 
 const quickLinks = [
@@ -66,16 +67,19 @@ export const Dashboard = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {stats.map((stat, index) => (
-          <div key={index} className="border border-neutral-800 p-8">
+          <div key={index} className="border border-neutral-800 p-8 hover:border-neutral-700 transition-colors group">
             <p className="text-neutral-400 text-xs uppercase tracking-wider mb-4 font-mono">{stat.title}</p>
             <div className="flex items-end justify-between">
-              <p className="text-3xl font-light text-white">{stat.value}</p>
+              <div className="flex-1">
+                <p className="text-3xl font-light text-white mb-2 group-hover:text-neutral-200 transition-colors">{stat.value}</p>
+                <p className="text-neutral-500 text-xs font-mono">{stat.description}</p>
+              </div>
               
-              {/* Completion Ring for Deliverables Due */}
-              {stat.title === 'Deliverables Due' && (
-                <div className="relative w-12 h-12">
+              {/* Progress Ring for Deliverables Completed */}
+              {stat.showProgress && (
+                <div className="relative w-12 h-12 ml-4">
                   <svg className="w-12 h-12 -rotate-90" viewBox="0 0 44 44">
                     <circle
                       cx="22"

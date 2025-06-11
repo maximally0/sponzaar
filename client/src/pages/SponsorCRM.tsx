@@ -7,29 +7,36 @@ const initialSponsors = [
     name: 'TechCorp Solutions',
     email: 'contact@techcorp.com',
     tier: '₹20K',
-    status: 'Closed',
+    status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
     notes: 'Title sponsor confirmed'
   },
   {
     name: 'CodeCafe',
     email: 'hello@codecafe.in',
     tier: '₹10K',
-    status: 'In Talks',
+    status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
     notes: 'Negotiating benefits'
   },
   {
     name: 'StartupForge',
     email: 'partnerships@startupforge.com',
     tier: '₹5K',
-    status: 'Contacted',
+    status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
     notes: 'Initial email sent'
   },
   {
     name: 'InnovateHub',
     email: 'sponsor@innovatehub.io',
     tier: '₹10K',
-    status: 'Closed',
+    status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
     notes: 'Payment received'
+  },
+  {
+    name: 'TechStart Inc',
+    email: 'hello@techstart.com',
+    tier: '₹5K',
+    status: 'Ghosted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
+    notes: 'No response after 3 follow-ups'
   },
 ];
 
@@ -41,6 +48,7 @@ export const SponsorCRM = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isDeliverablesOpen, setIsDeliverablesOpen] = useState(false);
   const [selectedSponsorIndex, setSelectedSponsorIndex] = useState(-1);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(-1);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -75,19 +83,19 @@ export const SponsorCRM = () => {
   // Sample sponsor lists for import
   const sampleLists = {
     'Hackathon Sponsors': [
-      { name: 'GitHub', email: 'sponsor@github.com', tier: '₹20K', status: 'Contacted', notes: 'Interested in developer tools showcase' },
-      { name: 'MongoDB', email: 'events@mongodb.com', tier: '₹15K', status: 'In Talks', notes: 'Database workshop sponsor' },
-      { name: 'AWS', email: 'startup@aws.com', tier: '₹25K', status: 'Closed', notes: 'Cloud infrastructure partner' }
+      { name: 'GitHub', email: 'sponsor@github.com', tier: '₹20K', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Interested in developer tools showcase' },
+      { name: 'MongoDB', email: 'events@mongodb.com', tier: '₹15K', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Database workshop sponsor' },
+      { name: 'AWS', email: 'startup@aws.com', tier: '₹25K', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Cloud infrastructure partner' }
     ],
     'EdTech Sponsors': [
-      { name: 'Coursera', email: 'partnerships@coursera.org', tier: '₹10K', status: 'Contacted', notes: 'Online learning platform' },
-      { name: 'Khan Academy', email: 'sponsor@khanacademy.org', tier: '₹8K', status: 'In Talks', notes: 'Educational content provider' },
-      { name: 'Udemy', email: 'business@udemy.com', tier: '₹12K', status: 'Closed', notes: 'Course creation tools' }
+      { name: 'Coursera', email: 'partnerships@coursera.org', tier: '₹10K', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Online learning platform' },
+      { name: 'Khan Academy', email: 'sponsor@khanacademy.org', tier: '₹8K', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Educational content provider' },
+      { name: 'Udemy', email: 'business@udemy.com', tier: '₹12K', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Course creation tools' }
     ],
     'Startup Sponsors': [
-      { name: 'Y Combinator', email: 'events@ycombinator.com', tier: '₹30K', status: 'Contacted', notes: 'Startup accelerator' },
-      { name: 'Sequoia Capital', email: 'outreach@sequoiacap.com', tier: '₹25K', status: 'In Talks', notes: 'Venture capital firm' },
-      { name: 'AngelList', email: 'partnerships@angellist.com', tier: '₹15K', status: 'Closed', notes: 'Startup platform' }
+      { name: 'Y Combinator', email: 'events@ycombinator.com', tier: '₹30K', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Startup accelerator' },
+      { name: 'Sequoia Capital', email: 'outreach@sequoiacap.com', tier: '₹25K', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Venture capital firm' },
+      { name: 'AngelList', email: 'partnerships@angellist.com', tier: '₹15K', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Startup platform' }
     ]
   };
 
@@ -112,7 +120,7 @@ export const SponsorCRM = () => {
       name: formData.name,
       email: formData.email,
       tier: tierPricing[formData.tier as keyof typeof tierPricing],
-      status: formData.contacted ? 'Contacted' : 'Not Contacted',
+      status: (formData.contacted ? 'Contacted' : 'Contacted') as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
       notes: formData.notes
     };
 
