@@ -7,7 +7,7 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-background flex w-full">
       <Sidebar />
-      <main className="flex-1 p-8 overflow-auto">
+      <main className="flex-1 p-12 overflow-auto">
         <Outlet />
       </main>
     </div>

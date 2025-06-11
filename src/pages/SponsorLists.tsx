@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 
 const sponsorData = [
@@ -52,20 +51,20 @@ export const SponsorLists = () => {
     : sponsorData.filter(sponsor => sponsor.category === selectedCategory);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       <div>
-        <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Sponsor Lists</h1>
-        <p className="text-muted-foreground text-sm font-light">Discover potential sponsors by event type</p>
+        <h1 className="text-2xl font-medium text-foreground mb-2">Sponsor Lists</h1>
+        <p className="text-muted-foreground text-sm">Discover potential sponsors by event type</p>
       </div>
 
-      <div className="flex space-x-6">
+      <div className="flex space-x-8">
         {categories.map((category) => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`text-sm font-light transition-colors border-b pb-1 ${
+            className={`text-sm transition-colors border-b pb-2 ${
               selectedCategory === category
-                ? 'text-foreground border-foreground'
+                ? 'text-foreground border-foreground font-medium'
                 : 'text-muted-foreground border-transparent hover:text-foreground'
             }`}
           >
@@ -74,27 +73,27 @@ export const SponsorLists = () => {
         ))}
       </div>
 
-      <div className="bg-card border border-border">
+      <div className="border border-border">
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border">
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Sponsor Name</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Category</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Contact Email</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Website</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Sponsor Name</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Category</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Contact Email</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Website</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredSponsors.map((sponsor, index) => (
-              <TableRow key={index} className="border-b border-border last:border-b-0">
-                <TableCell className="text-foreground font-light">{sponsor.name}</TableCell>
-                <TableCell>
+              <TableRow key={index} className="border-b border-border last:border-b-0 hover:bg-accent/20">
+                <TableCell className="text-foreground px-6 py-4">{sponsor.name}</TableCell>
+                <TableCell className="px-6 py-4">
                   <span className="text-muted-foreground text-sm">
                     {sponsor.category}
                   </span>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">{sponsor.email}</TableCell>
-                <TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{sponsor.email}</TableCell>
+                <TableCell className="px-6 py-4">
                   <a 
                     href={`https://${sponsor.website}`} 
                     target="_blank" 

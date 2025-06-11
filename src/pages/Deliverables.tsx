@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Badge } from '../components/ui/badge';
 
 const deliverables = [
   {
@@ -37,49 +35,49 @@ const deliverables = [
 
 export const Deliverables = () => {
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-12">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Deliverables</h1>
-          <p className="text-muted-foreground text-sm font-light">Track sponsor commitments</p>
+          <h1 className="text-2xl font-medium text-foreground mb-2">Deliverables</h1>
+          <p className="text-muted-foreground text-sm">Track sponsor commitments</p>
         </div>
-        <button className="text-foreground text-sm font-light hover:text-muted-foreground transition-colors border-b border-transparent hover:border-muted-foreground">
+        <button className="border border-border px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
           Add Deliverable
         </button>
       </div>
 
-      <div className="bg-card border border-border">
+      <div className="border border-border">
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border">
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Sponsor Name</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Deliverable Type</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Due Date</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Status</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Proof Upload</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Notes</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Sponsor Name</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Deliverable Type</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Due Date</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Status</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Proof Upload</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Notes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {deliverables.map((deliverable, index) => (
-              <TableRow key={index} className="border-b border-border last:border-b-0">
-                <TableCell className="text-foreground font-light">{deliverable.sponsorName}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">{deliverable.type}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">{deliverable.dueDate}</TableCell>
-                <TableCell>
-                  <span className={`text-xs font-light px-2 py-1 ${
+              <TableRow key={index} className="border-b border-border last:border-b-0 hover:bg-accent/20">
+                <TableCell className="text-foreground px-6 py-4">{deliverable.sponsorName}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{deliverable.type}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{deliverable.dueDate}</TableCell>
+                <TableCell className="px-6 py-4">
+                  <span className={`text-xs ${
                     deliverable.status === 'Done' ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {deliverable.status}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-6 py-4">
                   <input 
                     type="file" 
-                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:border-0 file:bg-transparent file:text-muted-foreground file:font-light"
+                    className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:border-0 file:bg-transparent file:text-muted-foreground"
                   />
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">{deliverable.notes}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{deliverable.notes}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
-import { Badge } from '../components/ui/badge';
 
 const sponsors = [
   {
@@ -45,38 +43,38 @@ const sponsors = [
 
 export const SponsorCRM = () => {
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-12">
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-light text-foreground mb-1 tracking-wide">Sponsor CRM</h1>
-          <p className="text-muted-foreground text-sm font-light">Manage sponsor relationships</p>
+          <h1 className="text-2xl font-medium text-foreground mb-2">Sponsor CRM</h1>
+          <p className="text-muted-foreground text-sm">Manage sponsor relationships</p>
         </div>
-        <button className="text-foreground text-sm font-light hover:text-muted-foreground transition-colors border-b border-transparent hover:border-muted-foreground">
+        <button className="border border-border px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
           Add Sponsor
         </button>
       </div>
 
-      <div className="bg-card border border-border">
+      <div className="border border-border">
         <Table>
           <TableHeader>
             <TableRow className="border-b border-border">
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Sponsor Name</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Email</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Phone</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Tier</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Contacted</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Status</TableHead>
-              <TableHead className="text-muted-foreground font-light text-xs uppercase tracking-wider">Notes</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Sponsor Name</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Email</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Phone</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Tier</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Contacted</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Status</TableHead>
+              <TableHead className="text-muted-foreground text-xs uppercase tracking-wider font-medium px-6 py-4">Notes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {sponsors.map((sponsor, index) => (
-              <TableRow key={index} className="border-b border-border last:border-b-0">
-                <TableCell className="text-foreground font-light">{sponsor.name}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">{sponsor.email}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">{sponsor.phone}</TableCell>
-                <TableCell className="text-muted-foreground text-sm">{sponsor.tier}</TableCell>
-                <TableCell>
+              <TableRow key={index} className="border-b border-border last:border-b-0 hover:bg-accent/20">
+                <TableCell className="text-foreground px-6 py-4">{sponsor.name}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{sponsor.email}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{sponsor.phone}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{sponsor.tier}</TableCell>
+                <TableCell className="px-6 py-4">
                   <input 
                     type="checkbox" 
                     checked={sponsor.contacted}
@@ -84,10 +82,10 @@ export const SponsorCRM = () => {
                     readOnly
                   />
                 </TableCell>
-                <TableCell>
-                  <span className="text-xs font-light text-muted-foreground">{sponsor.status}</span>
+                <TableCell className="px-6 py-4">
+                  <span className="text-xs text-muted-foreground">{sponsor.status}</span>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-sm">{sponsor.notes}</TableCell>
+                <TableCell className="text-muted-foreground text-sm px-6 py-4">{sponsor.notes}</TableCell>
               </TableRow>
             ))}
           </TableBody>
