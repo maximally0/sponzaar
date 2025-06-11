@@ -5,6 +5,7 @@ import { Link, useLocation } from 'wouter';
 const menuItems = [
   { title: 'Dashboard', path: '/' },
   { title: 'Sponsor CRM', path: '/crm' },
+  { title: 'Automations', path: '/automations' },
   { title: 'Sponsor Lists', path: '/sponsor-lists' },
   { title: 'Marketplace', path: '/sponsor-marketplace' },
   { title: 'Settings', path: '/settings' },
