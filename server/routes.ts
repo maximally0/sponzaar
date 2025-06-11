@@ -112,23 +112,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'to, subject, and html are required' });
       }
 
-      if (!process.env.SENDGRID_API_KEY) {
-        return res.status(500).json({ error: 'SendGrid API key not configured' });
-      }
-
       const msg = {
         to,
-        from: from || 'noreply@sponzaar.com', // Use provided sender or default
+        from: from || 'noreply@sponzaar.com',
         subject,
         html
       };
 
+      // Check if SendGrid is configured
+      if (!sendGridEnabled) {
+        console.log(`[SIMULATED EMAIL] To: ${to}, Subject: ${subject}`);
+        return res.json({ 
+          success: true, 
+          message: 'Email simulated successfully (SendGrid API key not configured)',
+          simulated: true,
+          emailData: msg
+        });
+      }
+
+      // Try to send with SendGrid
       await sgMail.send(msg);
-      res.json({ success: true, message: 'Email sent successfully' });
+      res.json({ success: true, message: 'Email sent successfully via SendGrid' });
     } catch (error: any) {
       console.error('Error sending email:', error);
       
-      // Provide more specific error messages
       let errorMessage = 'Failed to send email';
       if (error.code === 403) {
         errorMessage = 'Sender email not verified with SendGrid. Please verify your sender email address in SendGrid dashboard.';
