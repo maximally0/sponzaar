@@ -1,14 +1,98 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'wouter';
-import { useSponsorListStore } from '../hooks/useSponsorListStore';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiGet, apiPost } from '../lib/api';
+import { useToast } from '../hooks/use-toast';
+
+interface SponsorList {
+  id: string;
+  name: string;
+  description: string;
+  tags: string[];
+  seller: string;
+  price: string;
+  count: number;
+  imported: boolean;
+}
 
 export const SponsorLists = () => {
-  const { purchasedLists, importToCSM } = useSponsorListStore();
+  const [uploadForm, setUploadForm] = useState({
+    name: '',
+    description: '',
+    file: null as File | null
+  });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleImport = (listId: number) => {
-    importToCSM(listId);
+  const { data: purchasedLists = [], isLoading } = useQuery({
+    queryKey: ['/api/lists'],
+    queryFn: () => apiGet<SponsorList[]>('/api/lists')
+  });
+
+  const importMutation = useMutation({
+    mutationFn: (listId: string) => apiPost(`/api/lists/import`, { listId }),
+    onSuccess: () => {
+      toast({ title: "List imported successfully to CRM" });
+      queryClient.invalidateQueries({ queryKey: ['/api/lists'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
+    },
+    onError: () => {
+      toast({ title: "Failed to import list", variant: "destructive" });
+    }
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      return apiPost('/api/lists/upload', formData);
+    },
+    onSuccess: () => {
+      toast({ title: "List uploaded successfully" });
+      setUploadForm({ name: '', description: '', file: null });
+      queryClient.invalidateQueries({ queryKey: ['/api/lists'] });
+    },
+    onError: () => {
+      toast({ title: "Failed to upload list", variant: "destructive" });
+    }
+  });
+
+  const handleImport = (listId: string) => {
+    importMutation.mutate(listId);
   };
+
+  const handleUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadForm.file || !uploadForm.name) {
+      toast({ title: "Please fill all fields and select a file", variant: "destructive" });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('name', uploadForm.name);
+    formData.append('description', uploadForm.description);
+    formData.append('file', uploadForm.file);
+    
+    uploadMutation.mutate(formData);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 bg-neutral-800 animate-pulse rounded"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="border border-neutral-800 p-6 bg-black">
+              <div className="space-y-4">
+                <div className="h-6 bg-neutral-800 animate-pulse rounded"></div>
+                <div className="h-4 bg-neutral-800 animate-pulse rounded"></div>
+                <div className="h-10 bg-neutral-800 animate-pulse rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-16">
@@ -75,9 +159,10 @@ export const SponsorLists = () => {
 
                 <button
                   onClick={() => handleImport(list.id)}
-                  className="w-full px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
+                  disabled={list.imported || importMutation.isPending}
+                  className="w-full px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Import to CRM
+                  {importMutation.isPending ? 'Importing...' : list.imported ? 'Already Imported' : 'Import to CRM'}
                 </button>
               </div>
             </div>
@@ -90,21 +175,27 @@ export const SponsorLists = () => {
         <p className="text-neutral-400 text-sm mb-6">
           Have your own sponsor database? Upload it as a CSV file to add to your collection.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-neutral-400 text-sm mb-3">List Name</label>
             <input 
               type="text" 
+              value={uploadForm.name}
+              onChange={(e) => setUploadForm(prev => ({ ...prev, name: e.target.value }))}
               placeholder="My Custom Sponsor List"
               className="w-full bg-black border border-neutral-700 px-4 py-3 text-white placeholder-neutral-500 focus:border-neutral-600 focus:outline-none"
+              required
             />
           </div>
           <div>
             <label className="block text-neutral-400 text-sm mb-3">Description</label>
             <input 
               type="text" 
+              value={uploadForm.description}
+              onChange={(e) => setUploadForm(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Brief description of your list"
               className="w-full bg-black border border-neutral-700 px-4 py-3 text-white placeholder-neutral-500 focus:border-neutral-600 focus:outline-none"
+              required
             />
           </div>
           <div>
@@ -112,15 +203,21 @@ export const SponsorLists = () => {
             <input 
               type="file" 
               accept=".csv"
+              onChange={(e) => setUploadForm(prev => ({ ...prev, file: e.target.files?.[0] || null }))}
               className="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:border file:border-neutral-700 file:bg-transparent file:text-neutral-400 file:hover:bg-neutral-950"
+              required
             />
           </div>
           <div className="flex items-end">
-            <button className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors">
-              Upload List
+            <button 
+              type="submit"
+              disabled={uploadMutation.isPending}
+              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {uploadMutation.isPending ? 'Uploading...' : 'Upload List'}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

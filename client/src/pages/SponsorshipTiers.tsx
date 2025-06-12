@@ -1,26 +1,103 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
+import { apiGet, apiPost } from '../lib/api';
+import { useToast } from '../hooks/use-toast';
 
-const tiers = [
-  {
-    name: 'Silver',
-    price: '₹5,000',
-    benefits: ['Logo on website', 'Social media mention', 'Certificate of appreciation']
-  },
-  {
-    name: 'Gold',
-    price: '₹10,000',
-    benefits: ['Logo on banners', 'Logo on website', 'Social media posts', 'Newsletter mention', 'Certificate']
-  },
-  {
-    name: 'Title Sponsor',
-    price: '₹20,000',
-    benefits: ['Event naming rights', 'Prime logo placement', 'Speaking opportunity', 'Booth space', 'All Silver & Gold benefits']
-  },
-];
+interface Tier {
+  id: string;
+  name: string;
+  price: string;
+  benefits: string[];
+}
 
 export const SponsorshipTiers = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    price: '',
+    benefits: ['']
+  });
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: tiers = [], isLoading } = useQuery({
+    queryKey: ['/api/tiers'],
+    queryFn: () => apiGet<Tier[]>('/api/tiers')
+  });
+
+  const createTierMutation = useMutation({
+    mutationFn: (tierData: Omit<Tier, 'id'>) => apiPost('/api/tiers', tierData),
+    onSuccess: () => {
+      toast({ title: "Tier created successfully" });
+      setIsModalOpen(false);
+      setFormData({ name: '', price: '', benefits: [''] });
+      queryClient.invalidateQueries({ queryKey: ['/api/tiers'] });
+    },
+    onError: () => {
+      toast({ title: "Failed to create tier", variant: "destructive" });
+    }
+  });
+
+  const handleAddBenefit = () => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: [...prev.benefits, '']
+    }));
+  };
+
+  const handleRemoveBenefit = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: prev.benefits.filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleBenefitChange = (index: number, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      benefits: prev.benefits.map((benefit, i) => i === index ? value : benefit)
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const validBenefits = formData.benefits.filter(b => b.trim());
+    if (!formData.name || !formData.price || validBenefits.length === 0) {
+      toast({ title: "Please fill all fields", variant: "destructive" });
+      return;
+    }
+    
+    createTierMutation.mutate({
+      name: formData.name,
+      price: formData.price,
+      benefits: validBenefits
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-12">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="border border-border p-8">
+              <div className="space-y-6">
+                <div className="h-6 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+                <div className="h-8 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+                <div className="space-y-3">
+                  {[1, 2, 3].map(j => (
+                    <div key={j} className="h-4 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-12">
       <div>
@@ -53,7 +130,10 @@ export const SponsorshipTiers = () => {
         <div className="p-8 border-b border-border">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-medium text-foreground">Tier Summary</h2>
-            <button className="border border-border px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="border border-border px-4 py-2 text-sm text-foreground hover:bg-accent transition-colors"
+            >
               Add New Tier
             </button>
           </div>
