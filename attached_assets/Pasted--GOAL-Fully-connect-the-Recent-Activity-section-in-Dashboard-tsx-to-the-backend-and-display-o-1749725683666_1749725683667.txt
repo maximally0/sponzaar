@@ -1,0 +1,68 @@
+🎯 GOAL: Fully connect the "Recent Activity" section in `Dashboard.tsx` to the backend and display only relevant, clean entries.
+
+🧠 CONTEXT:
+- The backend route is `GET /api/activity`
+- The frontend is in `Dashboard.tsx` under "Recent Activity"
+- Right now, the data shows but includes weird/unwanted entries
+- The rendering is buggy and doesn’t format properly
+
+✅ DO THIS:
+
+1. **Check the `/api/activity` route**
+   - Confirm it returns an array like:
+     ```json
+     [
+       { "title": "Zomato", "createdAt": "2024-06-12T10:30:00Z" }
+     ]
+     ```
+   - If there are extra/unwanted fields or irrelevant items (e.g. internal system logs, blank titles, etc.), **filter them out at the backend or frontend**
+
+2. **In `Dashboard.tsx`, fix the frontend logic**
+   - Fetch `/api/activity` on mount
+   - Clean/filter the data if needed
+   - Display only recent items with a `title` and a valid `createdAt`
+   - Format timestamps to say "2h ago", "1d ago", etc.
+   - If no items, show “No recent activity yet”
+
+3. **Replace the current static or buggy map with this logic:**
+
+```ts
+const [activities, setActivities] = useState([]);
+const [error, setError] = useState(null);
+
+useEffect(() => {
+  fetch('/api/activity')
+    .then(res => res.json())
+    .then(data => {
+      const clean = data
+        .filter(a => a.title && a.createdAt)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setActivities(clean);
+    })
+    .catch(err => setError(err.message));
+}, []);
+
+const formatTimeAgo = (timestamp) => {
+  const diff = Date.now() - new Date(timestamp).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+};
+
+return (
+  <div className="recent-activity">
+    {activities.length === 0 ? (
+      <div className="text-sm text-gray-400">No recent activity yet</div>
+    ) : (
+      activities.map((a, i) => (
+        <div key={i} className="flex justify-between text-sm py-1">
+          <span>• {a.title}</span>
+          <span className="text-right text-gray-500">{formatTimeAgo(a.createdAt)}</span>
+        </div>
+      ))
+    )}
+  </div>
+);

@@ -53,12 +53,12 @@ const marketplaceLists = [
   }
 ];
 
-// Mock activity data
+// Activity log - dynamic data will be added here
 const activityLog = [
-  { type: "email_sent", sponsor: "Zomato", time: "2h ago" },
-  { type: "sponsor_added", sponsor: "Razorpay", time: "1d ago" },
-  { type: "tier_created", sponsor: "Gold Sponsor", time: "2d ago" },
-  { type: "list_imported", sponsor: "Tech Startups", time: "3d ago" }
+  { title: "Email sent to Zomato", createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
+  { title: "Added Razorpay as sponsor", createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
+  { title: "Created Gold Sponsor tier", createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+  { title: "Imported Tech Startups list", createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() }
 ];
 
 // Initialize SendGrid when API key is available
