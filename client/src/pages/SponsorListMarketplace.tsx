@@ -1,41 +1,118 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
-import { useSponsorListStore } from '../hooks/useSponsorListStore';
+import { apiGet, apiPost } from '@/lib/api';
+import { toast } from '@/hooks/use-toast';
+
+interface MarketplaceList {
+  id: string;
+  title: string;
+  price: string;
+  tags: string[];
+  sponsors: Array<{
+    name: string;
+    email: string;
+    type: string;
+    location: string;
+  }>;
+}
 
 export const SponsorListMarketplace = () => {
-  const { availableLists, purchaseList } = useSponsorListStore();
+  const [marketplaceLists, setMarketplaceLists] = useState<MarketplaceList[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [importingList, setImportingList] = useState<string | null>(null);
+
+  // Fetch marketplace data on component mount
+  useEffect(() => {
+    const fetchMarketplaceData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const data = await apiGet<MarketplaceList[]>('/marketplace');
+        setMarketplaceLists(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMarketplaceData();
+  }, []);
 
   const handlePreview = (listName: string) => {
     alert(`Preview functionality for "${listName}" would open here`);
   };
 
-  const handlePurchase = (listId: number) => {
-    purchaseList(listId);
+  const handleImport = async (list: MarketplaceList) => {
+    setImportingList(list.id);
+    
+    try {
+      await apiPost('/lists/import', {
+        sponsors: list.sponsors
+      });
+      
+      toast({
+        title: "List imported successfully",
+        description: `${list.sponsors.length} sponsors imported from "${list.title}"`
+      });
+    } catch (err: any) {
+      toast({
+        title: "Import failed",
+        description: err.message,
+        variant: "destructive"
+      });
+    } finally {
+      setImportingList(null);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-16">
+        <div>
+          <h1 className="text-2xl font-medium text-white mb-2">Sponsor List Marketplace</h1>
+          <p className="text-neutral-400 text-sm font-mono">Loading marketplace lists...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-16">
+        <div>
+          <h1 className="text-2xl font-medium text-white mb-2">Sponsor List Marketplace</h1>
+          <p className="text-red-400 text-sm">Error loading marketplace: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-16">
       <div>
         <h1 className="text-2xl font-medium text-white mb-2">Sponsor List Marketplace</h1>
-        <p className="text-neutral-400 text-sm font-mono">Browse and purchase curated sponsor lists</p>
+        <p className="text-neutral-400 text-sm font-mono">Browse and import curated sponsor lists</p>
       </div>
 
-      {availableLists.length === 0 ? (
+      {marketplaceLists.length === 0 ? (
         <div className="border border-neutral-800 p-12 text-center">
-          <h3 className="text-lg font-medium text-white mb-4">All Lists Purchased!</h3>
+          <h3 className="text-lg font-medium text-white mb-4">No Lists Available</h3>
           <p className="text-neutral-400 text-sm mb-6">
-            You've purchased all available sponsor lists. Check back later for new additions or manage your existing lists.
+            No sponsor lists are currently available in the marketplace. Check back later for new additions.
           </p>
           <Link 
-            to="/sponsor-lists"
+            to="/crm"
             className="inline-block px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
           >
-            View Your Lists
+            Add Sponsors Manually
           </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {availableLists.map((list) => (
+          {marketplaceLists.map((list) => (
             <div 
               key={list.id}
               className="border border-neutral-800 p-6 bg-black hover:border-neutral-700 transition-colors group"
