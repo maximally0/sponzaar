@@ -1,47 +1,21 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SponsorRow } from '../components/SponsorRow';
+import { apiGet, apiPost } from '@/lib/api';
 
-const initialSponsors = [
-  {
-    name: 'TechCorp Solutions',
-    email: 'contact@techcorp.com',
-    tier: '₹20K',
-    status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
-    notes: 'Title sponsor confirmed'
-  },
-  {
-    name: 'CodeCafe',
-    email: 'hello@codecafe.in',
-    tier: '₹10K',
-    status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
-    notes: 'Negotiating benefits'
-  },
-  {
-    name: 'StartupForge',
-    email: 'partnerships@startupforge.com',
-    tier: '₹5K',
-    status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
-    notes: 'Initial email sent'
-  },
-  {
-    name: 'InnovateHub',
-    email: 'sponsor@innovatehub.io',
-    tier: '₹10K',
-    status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
-    notes: 'Payment received'
-  },
-  {
-    name: 'TechStart Inc',
-    email: 'hello@techstart.com',
-    tier: '₹5K',
-    status: 'Ghosted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
-    notes: 'No response after 3 follow-ups'
-  },
-];
+interface Sponsor {
+  id: string;
+  name: string;
+  email: string;
+  tier: string;
+  status: 'Not Contacted' | 'Contacted' | 'Interested' | 'Closed' | 'Ghosted';
+  notes: string;
+}
 
 export const SponsorCRM = () => {
-  const [sponsors, setSponsors] = useState(initialSponsors);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingIndex, setEditingIndex] = useState(-1);
@@ -57,6 +31,16 @@ export const SponsorCRM = () => {
     contacted: false,
     notes: ''
   });
+
+  // Fetch sponsors on component mount
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    apiGet<Sponsor[]>('/sponsors')
+      .then(setSponsors)
+      .catch(err => setError(err.message))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   // Deliverables state - grouped by sponsor index
   const [deliverables, setDeliverables] = useState<{[key: number]: Array<{
@@ -83,19 +67,19 @@ export const SponsorCRM = () => {
   // Sample sponsor lists for import
   const sampleLists = {
     'Hackathon Sponsors': [
-      { name: 'GitHub', email: 'sponsor@github.com', tier: '₹20K', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Interested in developer tools showcase' },
-      { name: 'MongoDB', email: 'events@mongodb.com', tier: '₹15K', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Database workshop sponsor' },
-      { name: 'AWS', email: 'startup@aws.com', tier: '₹25K', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Cloud infrastructure partner' }
+      { id: 'github-1', name: 'GitHub', email: 'sponsor@github.com', tier: 'title', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Interested in developer tools showcase' },
+      { id: 'mongodb-1', name: 'MongoDB', email: 'events@mongodb.com', tier: 'gold', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Database workshop sponsor' },
+      { id: 'aws-1', name: 'AWS', email: 'startup@aws.com', tier: 'title', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Cloud infrastructure partner' }
     ],
     'EdTech Sponsors': [
-      { name: 'Coursera', email: 'partnerships@coursera.org', tier: '₹10K', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Online learning platform' },
-      { name: 'Khan Academy', email: 'sponsor@khanacademy.org', tier: '₹8K', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Educational content provider' },
-      { name: 'Udemy', email: 'business@udemy.com', tier: '₹12K', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Course creation tools' }
+      { id: 'coursera-1', name: 'Coursera', email: 'partnerships@coursera.org', tier: 'gold', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Online learning platform' },
+      { id: 'khan-1', name: 'Khan Academy', email: 'sponsor@khanacademy.org', tier: 'bronze', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Educational content provider' },
+      { id: 'udemy-1', name: 'Udemy', email: 'business@udemy.com', tier: 'gold', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Course creation tools' }
     ],
     'Startup Sponsors': [
-      { name: 'Y Combinator', email: 'events@ycombinator.com', tier: '₹30K', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Startup accelerator' },
-      { name: 'Sequoia Capital', email: 'outreach@sequoiacap.com', tier: '₹25K', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Venture capital firm' },
-      { name: 'AngelList', email: 'partnerships@angellist.com', tier: '₹15K', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Startup platform' }
+      { id: 'yc-1', name: 'Y Combinator', email: 'events@ycombinator.com', tier: 'title', status: 'Contacted' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Startup accelerator' },
+      { id: 'sequoia-1', name: 'Sequoia Capital', email: 'outreach@sequoiacap.com', tier: 'title', status: 'Interested' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Venture capital firm' },
+      { id: 'angellist-1', name: 'AngelList', email: 'partnerships@angellist.com', tier: 'gold', status: 'Closed' as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted', notes: 'Startup platform' }
     ]
   };
 
@@ -107,34 +91,41 @@ export const SponsorCRM = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     const tierPricing = {
-      'Silver': '₹5K',
-      'Gold': '₹10K',
-      'Title': '₹20K'
+      'Silver': 'bronze',
+      'Gold': 'gold',
+      'Title': 'title'
     };
 
     const sponsorData = {
+      id: `sponsor-${Date.now()}`,
       name: formData.name,
       email: formData.email,
       tier: tierPricing[formData.tier as keyof typeof tierPricing],
-      status: (formData.contacted ? 'Contacted' : 'Contacted') as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
+      status: (formData.contacted ? 'Contacted' : 'Not Contacted') as 'Not Contacted' | 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
       notes: formData.notes
     };
 
-    if (isEditMode && editingIndex >= 0) {
-      // Update existing sponsor
-      setSponsors(prev => prev.map((sponsor, index) => 
-        index === editingIndex ? sponsorData : sponsor
-      ));
-    } else {
-      // Add new sponsor
-      setSponsors(prev => [...prev, sponsorData]);
+    try {
+      if (isEditMode && editingIndex >= 0) {
+        // Update existing sponsor (would need PUT endpoint)
+        setSponsors(prev => prev.map((sponsor, index) => 
+          index === editingIndex ? sponsorData : sponsor
+        ));
+      } else {
+        // Add new sponsor
+        await apiPost('/sponsors', sponsorData);
+        // Refetch sponsors to get updated list
+        const updatedSponsors = await apiGet<Sponsor[]>('/sponsors');
+        setSponsors(updatedSponsors);
+      }
+      resetForm();
+    } catch (err: any) {
+      setError(err.message);
     }
-
-    resetForm();
   };
 
   const handleCancel = () => {
@@ -158,9 +149,9 @@ export const SponsorCRM = () => {
   const handleEdit = (index: number) => {
     const sponsor = sponsors[index];
     const tierMap = {
-      '₹5K': 'Silver',
-      '₹10K': 'Gold',
-      '₹20K': 'Title'
+      'bronze': 'Silver',
+      'gold': 'Gold', 
+      'title': 'Title'
     };
     
     setFormData({
@@ -192,12 +183,12 @@ export const SponsorCRM = () => {
       const lines = csv.split('\n').filter(line => line.trim());
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
       
-      const newSponsors = lines.slice(1).map(line => {
+      const newSponsors = lines.slice(1).map((line, lineIndex) => {
         const values = line.split(',').map(v => v.trim());
         const sponsor: any = {};
         
-        headers.forEach((header, index) => {
-          const value = values[index] || '';
+        headers.forEach((header, headerIndex) => {
+          const value = values[headerIndex] || '';
           switch (header) {
             case 'name':
               sponsor.name = value;
@@ -206,7 +197,7 @@ export const SponsorCRM = () => {
               sponsor.email = value;
               break;
             case 'tier':
-              sponsor.tier = value.includes('₹') ? value : `₹${value}`;
+              sponsor.tier = value.includes('₹') ? 'bronze' : 'bronze';
               break;
             case 'contacted':
               sponsor.status = value.toLowerCase() === 'true' || value.toLowerCase() === 'yes' ? 'Contacted' : 'Not Contacted';
@@ -218,10 +209,11 @@ export const SponsorCRM = () => {
         });
         
         return {
+          id: `sponsor-${Date.now()}-${lineIndex}`,
           name: sponsor.name || 'Unknown',
           email: sponsor.email || '',
-          tier: sponsor.tier || '₹5K',
-          status: sponsor.status || 'Not Contacted',
+          tier: sponsor.tier || 'bronze',
+          status: (sponsor.status || 'Not Contacted') as 'Not Contacted' | 'Contacted' | 'Interested' | 'Closed' | 'Ghosted',
           notes: sponsor.notes || ''
         };
       }).filter(sponsor => sponsor.name !== 'Unknown');
