@@ -453,9 +453,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Add to activity log
       activityLog.unshift({
-        type: "list_imported",
-        sponsor: `${addedCount} sponsors`,
-        time: "now"
+        title: `Imported ${addedCount} sponsors from list`,
+        createdAt: new Date().toISOString()
       });
 
       res.json({ 
@@ -513,9 +512,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Add to activity log
       activityLog.unshift({
-        type: "tier_created",
-        sponsor: name,
-        time: "now"
+        title: `Created ${name} tier`,
+        createdAt: new Date().toISOString()
       });
 
       res.status(201).json(newTier);

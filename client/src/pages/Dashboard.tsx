@@ -12,9 +12,8 @@ interface Stats {
 }
 
 interface Activity {
-  type: string;
-  sponsor: string;
-  time: string;
+  title: string;
+  createdAt: string;
 }
 
 const quickLinks = [
@@ -29,6 +28,16 @@ export const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const formatTimeAgo = (timestamp: string) => {
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days}d ago`;
+  };
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       setIsLoading(true);
@@ -40,8 +49,15 @@ export const Dashboard = () => {
           apiGet<Activity[]>('/activity')
         ]);
         
+        console.log('Activity data:', activityData);
+        
+        // Filter and clean activity data
+        const cleanActivities = activityData
+          .filter(a => a.title && a.createdAt)
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        
         setStats(statsData);
-        setActivity(activityData);
+        setActivity(cleanActivities);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -141,9 +157,9 @@ export const Dashboard = () => {
           <div className="space-y-4">
             {quickLinks.map((link, index) => (
               <Link key={index} href={link.path}>
-                <a className="block p-4 border border-neutral-700 hover:border-neutral-600 transition-colors text-white hover:bg-neutral-950 text-sm font-mono">
+                <div className="block p-4 border border-neutral-700 hover:border-neutral-600 transition-colors text-white hover:bg-neutral-950 text-sm font-mono cursor-pointer">
                   {link.title}
-                </a>
+                </div>
               </Link>
             ))}
           </div>
@@ -159,15 +175,15 @@ export const Dashboard = () => {
               <div key={index} className="flex items-center justify-between py-3 border-b border-neutral-900 last:border-0">
                 <div className="flex items-center space-x-4">
                   <div className="w-2 h-2 bg-white rounded-full"></div>
-                  <span className="text-neutral-300 text-sm font-mono">{item.sponsor}</span>
+                  <span className="text-neutral-300 text-sm font-mono">{item.title}</span>
                 </div>
-                <span className="text-neutral-500 text-xs font-mono">{item.time}</span>
+                <span className="text-neutral-500 text-xs font-mono">{formatTimeAgo(item.createdAt)}</span>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-8 text-neutral-500">
-            No recent activity. Start by adding sponsors or importing lists.
+            No recent activity yet
           </div>
         )}
       </div>
