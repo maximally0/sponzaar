@@ -53,13 +53,8 @@ const marketplaceLists = [
   }
 ];
 
-// Activity log - dynamic data will be added here
-const activityLog = [
-  { title: "Email sent to Zomato", createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() },
-  { title: "Added Razorpay as sponsor", createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() },
-  { title: "Created Gold Sponsor tier", createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
-  { title: "Imported Tech Startups list", createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString() }
-];
+// Activity log - will be populated with real user actions
+const activityLog: Array<{ title: string; createdAt: string }> = [];
 
 // Initialize SendGrid when API key is available
 function initializeSendGrid() {
