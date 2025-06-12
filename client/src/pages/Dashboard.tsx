@@ -92,11 +92,18 @@ export const Dashboard = () => {
     );
   }
 
+  // Calculate "In Talks" as total minus other categories
+  const contacted = stats?.contacted || 0;
+  const closed = stats?.closed || 0;
+  const ghosted = stats?.ghosted || 0;
+  const totalSponsors = stats?.totalSponsors || 0;
+  const inTalks = Math.max(0, totalSponsors - contacted - closed - ghosted);
+
   const pipelineStages = [
-    { name: 'Contacted', count: stats?.contacted || 0, color: 'bg-neutral-600' },
-    { name: 'In Talks', count: Math.floor((stats?.contacted || 0) * 0.6), color: 'bg-neutral-500' },
-    { name: 'Closed', count: stats?.closed || 0, color: 'bg-white' },
-    { name: 'Ghosted', count: stats?.ghosted || 0, color: 'bg-neutral-700' },
+    { name: 'Contacted', count: contacted, color: 'bg-neutral-600' },
+    { name: 'In Talks', count: inTalks, color: 'bg-neutral-500' },
+    { name: 'Closed', count: closed, color: 'bg-white' },
+    { name: 'Ghosted', count: ghosted, color: 'bg-neutral-700' },
   ];
 
   const displayStats = [
