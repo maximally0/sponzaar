@@ -351,90 +351,110 @@ export const SponsorCRM = () => {
             </tr>
           </thead>
           <tbody>
-            {sponsors.map((sponsor, index) => (
-              <tr 
-                key={index} 
-                onClick={() => handleRowClick(index)}
-                className="border-b border-neutral-800 last:border-b-0 hover:bg-neutral-950 transition-colors cursor-pointer"
-              >
-                <td className="px-6 py-4 text-white font-medium">{sponsor.name}</td>
-                <td className="px-6 py-4 text-neutral-300">{sponsor.email}</td>
-                <td className="px-6 py-4 text-neutral-300">{sponsor.tier}</td>
-                <td className="px-6 py-4 text-center">
-                  {sponsor.status === 'Contacted' || sponsor.status === 'Interested' || sponsor.status === 'Closed' ? (
-                    <span className="text-green-400">✓</span>
-                  ) : (
-                    <span className="text-red-400">✗</span>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="relative">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setStatusDropdownOpen(statusDropdownOpen === index ? -1 : index);
-                      }}
-                      className={`px-3 py-1 text-sm rounded-full ${getStatusBadgeClass(sponsor.status)} hover:opacity-80 transition-opacity`}
-                    >
-                      {sponsor.status}
-                    </button>
-                    
-                    {statusDropdownOpen === index && (
-                      <div className="absolute top-full left-0 mt-1 bg-black border border-neutral-700 rounded shadow-lg z-10">
-                        {['Contacted', 'Interested', 'Closed', 'Ghosted'].map((status) => (
-                          <button
-                            key={status}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleStatusUpdate(index, status as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted');
-                            }}
-                            className={`block w-full text-left px-4 py-2 text-sm hover:bg-neutral-900 transition-colors ${
-                              sponsor.status === status ? 'bg-neutral-800' : ''
-                            }`}
-                          >
-                            <span className={`inline-block px-2 py-1 rounded-full text-xs mr-2 ${getStatusBadgeClass(status)}`}>
-                              {status}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-neutral-400 text-sm max-w-xs truncate">{sponsor.notes}</td>
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleViewDeliverables(index, e);
-                      }}
-                      className="text-neutral-400 hover:text-white text-sm transition-colors"
-                    >
-                      Deliverables
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(index);
-                      }}
-                      className="text-neutral-400 hover:text-white text-sm transition-colors"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(index);
-                      }}
-                      className="text-neutral-400 hover:text-red-400 text-sm transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </div>
+            {isLoading ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-neutral-400">
+                  Loading sponsors...
                 </td>
               </tr>
-            ))}
+            ) : error ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-red-400">
+                  Error loading sponsors: {error}
+                </td>
+              </tr>
+            ) : sponsors.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-neutral-400">
+                  No sponsors found. Add a sponsor to get started.
+                </td>
+              </tr>
+            ) : 
+              sponsors.map((sponsor, index) => (
+                <tr 
+                  key={index} 
+                  onClick={() => handleRowClick(index)}
+                  className="border-b border-neutral-800 last:border-b-0 hover:bg-neutral-950 transition-colors cursor-pointer"
+                >
+                  <td className="px-6 py-4 text-white font-medium">{sponsor.name}</td>
+                  <td className="px-6 py-4 text-neutral-300">{sponsor.email}</td>
+                  <td className="px-6 py-4 text-neutral-300">{sponsor.tier}</td>
+                  <td className="px-6 py-4 text-center">
+                    {sponsor.status === 'Contacted' || sponsor.status === 'Interested' || sponsor.status === 'Closed' ? (
+                      <span className="text-green-400">✓</span>
+                    ) : (
+                      <span className="text-red-400">✗</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="relative">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setStatusDropdownOpen(statusDropdownOpen === index ? -1 : index);
+                        }}
+                        className={`px-3 py-1 text-sm rounded-full ${getStatusBadgeClass(sponsor.status)} hover:opacity-80 transition-opacity`}
+                      >
+                        {sponsor.status}
+                      </button>
+                      
+                      {statusDropdownOpen === index && (
+                        <div className="absolute top-full left-0 mt-1 bg-black border border-neutral-700 rounded shadow-lg z-10">
+                          {['Contacted', 'Interested', 'Closed', 'Ghosted'].map((status) => (
+                            <button
+                              key={status}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusUpdate(index, status as 'Contacted' | 'Interested' | 'Closed' | 'Ghosted');
+                              }}
+                              className={`block w-full text-left px-4 py-2 text-sm hover:bg-neutral-900 transition-colors ${
+                                sponsor.status === status ? 'bg-neutral-800' : ''
+                              }`}
+                            >
+                              <span className={`inline-block px-2 py-1 rounded-full text-xs mr-2 ${getStatusBadgeClass(status)}`}>
+                                {status}
+                              </span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-neutral-400 text-sm max-w-xs truncate">{sponsor.notes}</td>
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleViewDeliverables(index, e);
+                        }}
+                        className="text-neutral-400 hover:text-white text-sm transition-colors"
+                      >
+                        Deliverables
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(index);
+                        }}
+                        className="text-neutral-400 hover:text-white text-sm transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(index);
+                        }}
+                        className="text-neutral-400 hover:text-red-400 text-sm transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            }
           </tbody>
         </table>
       </div>
