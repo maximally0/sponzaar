@@ -1,6 +1,9 @@
 
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TierEditor } from '../components/TierEditor';
+import { apiGet, apiPost } from '../lib/api';
+import { useToast } from '../hooks/use-toast';
 
 const initialTiers = [
   {
@@ -56,7 +59,42 @@ export const Settings = () => {
     minimumAmount: '',
     description: ''
   });
-  const [fromEmail, setFromEmail] = useState('samplecollege@sponzaar.com');
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: emailSettings, isLoading: emailLoading } = useQuery({
+    queryKey: ['/api/settings/email'],
+    queryFn: () => apiGet<{ fromEmail: string }>('/api/settings/email')
+  });
+
+  const [fromEmail, setFromEmail] = useState(emailSettings?.fromEmail || 'samplecollege@sponzaar.com');
+
+  const updateEmailMutation = useMutation({
+    mutationFn: (email: string) => apiPost('/api/settings/email', { fromEmail: email }),
+    onSuccess: () => {
+      toast({ title: "Email settings saved successfully" });
+      queryClient.invalidateQueries({ queryKey: ['/api/settings/email'] });
+    },
+    onError: () => {
+      toast({ title: "Failed to save email settings", variant: "destructive" });
+    }
+  });
+
+  const testEmailMutation = useMutation({
+    mutationFn: () => apiPost('/api/test-email', { fromEmail }),
+    onSuccess: () => {
+      toast({ title: "Test email sent successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to send test email", variant: "destructive" });
+    }
+  });
+
+  React.useEffect(() => {
+    if (emailSettings?.fromEmail) {
+      setFromEmail(emailSettings.fromEmail);
+    }
+  }, [emailSettings]);
 
   const handleTierInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -119,13 +157,11 @@ export const Settings = () => {
   };
 
   const handleTestEmail = () => {
-    alert(`Test email would be sent from: ${fromEmail}`);
-    console.log('Test email functionality triggered for:', fromEmail);
+    testEmailMutation.mutate();
   };
 
   const handleSaveEmail = () => {
-    localStorage.setItem('fromEmail', fromEmail);
-    alert('Email configuration saved!');
+    updateEmailMutation.mutate(fromEmail);
   };
 
   return (
@@ -189,15 +225,17 @@ export const Settings = () => {
           <div className="flex space-x-4">
             <button 
               onClick={handleTestEmail}
-              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
+              disabled={testEmailMutation.isPending}
+              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors disabled:opacity-50"
             >
-              Test Email
+              {testEmailMutation.isPending ? 'Sending...' : 'Test Email'}
             </button>
             <button 
               onClick={handleSaveEmail}
-              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
+              disabled={updateEmailMutation.isPending}
+              className="px-6 py-3 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors disabled:opacity-50"
             >
-              Save Email Configuration
+              {updateEmailMutation.isPending ? 'Saving...' : 'Save Email Configuration'}
             </button>
           </div>
         </div>

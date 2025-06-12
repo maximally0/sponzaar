@@ -165,6 +165,89 @@ export const SponsorshipTiers = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Add Tier Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+          <div className="bg-background border border-border w-full max-w-md mx-4 p-8">
+            <h2 className="text-xl font-medium text-foreground mb-6">Add New Tier</h2>
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-muted-foreground text-sm mb-2">Tier Name</label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  required
+                  className="w-full bg-background border border-border px-3 py-2 text-foreground text-sm focus:border-ring focus:outline-none"
+                  placeholder="e.g., Silver, Gold, Platinum"
+                />
+              </div>
+
+              <div>
+                <label className="block text-muted-foreground text-sm mb-2">Price</label>
+                <input
+                  type="text"
+                  value={formData.price}
+                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                  required
+                  className="w-full bg-background border border-border px-3 py-2 text-foreground text-sm focus:border-ring focus:outline-none"
+                  placeholder="e.g., ₹5,000"
+                />
+              </div>
+
+              <div>
+                <label className="block text-muted-foreground text-sm mb-2">Benefits</label>
+                {formData.benefits.map((benefit, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={benefit}
+                      onChange={(e) => handleBenefitChange(index, e.target.value)}
+                      className="flex-1 bg-background border border-border px-3 py-2 text-foreground text-sm focus:border-ring focus:outline-none"
+                      placeholder="Enter benefit"
+                    />
+                    {formData.benefits.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBenefit(index)}
+                        className="px-3 py-2 text-sm text-muted-foreground border border-border hover:bg-accent transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddBenefit}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  + Add Benefit
+                </button>
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-sm text-muted-foreground border border-border bg-transparent hover:bg-accent transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={createTierMutation.isPending}
+                  className="px-4 py-2 text-sm text-foreground border border-border bg-transparent hover:bg-accent transition-colors disabled:opacity-50"
+                >
+                  {createTierMutation.isPending ? 'Creating...' : 'Create Tier'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

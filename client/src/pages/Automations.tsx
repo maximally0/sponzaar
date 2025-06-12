@@ -43,8 +43,8 @@ export const Automations = () => {
       
       try {
         const [templatesData, sponsorsData] = await Promise.all([
-          apiGet<EmailTemplate[]>('/templates'),
-          apiGet<Sponsor[]>('/sponsors')
+          apiGet<EmailTemplate[]>('/api/templates'),
+          apiGet<Sponsor[]>('/api/sponsors')
         ]);
         
         setEmailTemplates(templatesData);
@@ -72,10 +72,10 @@ export const Automations = () => {
         html: newTemplate.html
       };
       
-      await apiPost('/templates', templateData);
+      await apiPost('/api/templates', templateData);
       
       // Refresh templates list
-      const updatedTemplates = await apiGet<EmailTemplate[]>('/templates');
+      const updatedTemplates = await apiGet<EmailTemplate[]>('/api/templates');
       setEmailTemplates(updatedTemplates);
       
       // Reset form
@@ -112,7 +112,7 @@ export const Automations = () => {
     setIsSubmitting(true);
     
     try {
-      await apiPost('/send-to-uncontacted', {
+      await apiPost('/api/send-to-uncontacted', {
         templateId: selectedTemplateId,
         sender: 'noreply@sponzaar.com'
       });
@@ -126,7 +126,7 @@ export const Automations = () => {
       setSelectedTemplateId('');
       
       // Refresh sponsors to update their status
-      const updatedSponsors = await apiGet<Sponsor[]>('/sponsors');
+      const updatedSponsors = await apiGet<Sponsor[]>('/api/sponsors');
       setSponsors(updatedSponsors);
     } catch (err: any) {
       toast({
