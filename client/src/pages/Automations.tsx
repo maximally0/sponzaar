@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Trash2, Plus, Send, Eye, Edit } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { apiGet, apiPost } from '@/lib/api';
 
 interface EmailTemplate {
@@ -20,86 +21,81 @@ interface Sponsor {
 }
 
 export const Automations = () => {
-  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedSponsors, setSelectedSponsors] = useState<string[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [showTemplateForm, setShowTemplateForm] = useState(false);
-
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     subject: '',
     html: ''
   });
 
-  // Fetch data on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const [templatesData, sponsorsData] = await Promise.all([
-          apiGet<EmailTemplate[]>('/api/templates'),
-          apiGet<Sponsor[]>('/api/sponsors')
-        ]);
-        
-        setEmailTemplates(templatesData);
-        setSponsors(sponsorsData);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-    fetchData();
-  }, []);
+  const { data: emailTemplates = [], isLoading: templatesLoading } = useQuery({
+    queryKey: ['/api/templates'],
+    queryFn: () => apiGet<EmailTemplate[]>('/api/templates')
+  });
 
-  // Create new email template
-  const handleCreateTemplate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      const templateData = {
-        id: `template-${Date.now()}`,
-        name: newTemplate.name,
-        subject: newTemplate.subject,
-        html: newTemplate.html
-      };
-      
-      await apiPost('/api/templates', templateData);
-      
-      // Refresh templates list
-      const updatedTemplates = await apiGet<EmailTemplate[]>('/api/templates');
-      setEmailTemplates(updatedTemplates);
-      
-      // Reset form
-      setNewTemplate({ name: '', subject: '', html: '' });
-      setShowTemplateForm(false);
-      
+  const { data: sponsors = [], isLoading: sponsorsLoading } = useQuery({
+    queryKey: ['/api/sponsors'],
+    queryFn: () => apiGet<Sponsor[]>('/api/sponsors')
+  });
+
+  const isLoading = templatesLoading || sponsorsLoading;
+
+  const createTemplateMutation = useMutation({
+    mutationFn: (templateData: Omit<EmailTemplate, 'id'>) => 
+      apiPost('/api/templates', { ...templateData, id: `template-${Date.now()}` }),
+    onSuccess: () => {
       toast({
         title: "Template created successfully",
-        description: `"${templateData.name}" has been added to your templates.`
+        description: `"${newTemplate.name}" has been added to your templates.`
       });
-    } catch (err: any) {
-      setError(err.message);
+      setNewTemplate({ name: '', subject: '', html: '' });
+      setShowTemplateForm(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/templates'] });
+    },
+    onError: (err: any) => {
       toast({
         title: "Error creating template",
         description: err.message,
         variant: "destructive"
       });
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const bulkEmailMutation = useMutation({
+    mutationFn: (data: { templateId: string; sender: string }) => 
+      apiPost('/api/send-to-uncontacted', data),
+    onSuccess: () => {
+      toast({
+        title: "Emails sent successfully",
+        description: "Bulk emails sent to uncontacted sponsors."
+      });
+      setSelectedTemplateId('');
+      queryClient.invalidateQueries({ queryKey: ['/api/sponsors'] });
+    },
+    onError: (err: any) => {
+      toast({
+        title: "Error sending emails",
+        description: err.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleCreateTemplate = (e: React.FormEvent) => {
+    e.preventDefault();
+    createTemplateMutation.mutate({
+      name: newTemplate.name,
+      subject: newTemplate.subject,
+      html: newTemplate.html
+    });
   };
 
-  // Send bulk emails
-  const handleSendBulkEmails = async () => {
+  const handleSendBulkEmails = () => {
     if (!selectedTemplateId) {
       toast({
         title: "Missing selection",
@@ -109,34 +105,10 @@ export const Automations = () => {
       return;
     }
 
-    setIsSubmitting(true);
-    
-    try {
-      await apiPost('/api/send-to-uncontacted', {
-        templateId: selectedTemplateId,
-        sender: 'noreply@sponzaar.com'
-      });
-      
-      toast({
-        title: "Emails sent successfully",
-        description: "Bulk emails sent to uncontacted sponsors."
-      });
-      
-      // Clear selections
-      setSelectedTemplateId('');
-      
-      // Refresh sponsors to update their status
-      const updatedSponsors = await apiGet<Sponsor[]>('/api/sponsors');
-      setSponsors(updatedSponsors);
-    } catch (err: any) {
-      toast({
-        title: "Error sending emails",
-        description: err.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    bulkEmailMutation.mutate({
+      templateId: selectedTemplateId,
+      sender: 'noreply@sponzaar.com'
+    });
   };
 
   const uncontactedSponsors = sponsors.filter(sponsor => sponsor.status === 'Not Contacted');
@@ -147,17 +119,6 @@ export const Automations = () => {
         <div>
           <h1 className="text-2xl font-medium text-white mb-2">Automations</h1>
           <p className="text-neutral-400 text-sm font-mono">Loading email automation tools...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-16">
-        <div>
-          <h1 className="text-2xl font-medium text-white mb-2">Automations</h1>
-          <p className="text-red-400 text-sm">Error loading automations: {error}</p>
         </div>
       </div>
     );
@@ -222,10 +183,10 @@ export const Automations = () => {
               <div className="flex space-x-4">
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={createTemplateMutation.isPending}
                   className="px-4 py-2 bg-white text-black hover:bg-neutral-200 transition-colors text-sm font-mono disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Template'}
+                  {createTemplateMutation.isPending ? 'Creating...' : 'Create Template'}
                 </button>
                 <button
                   type="button"
@@ -299,11 +260,11 @@ export const Automations = () => {
         <div className="mt-8">
           <button
             onClick={handleSendBulkEmails}
-            disabled={isSubmitting || !selectedTemplateId}
+            disabled={bulkEmailMutation.isPending || !selectedTemplateId}
             className="flex items-center space-x-2 px-6 py-3 bg-white text-black hover:bg-neutral-200 transition-colors text-sm font-mono disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send size={16} />
-            <span>{isSubmitting ? 'Sending...' : 'Send to All Uncontacted'}</span>
+            <span>{bulkEmailMutation.isPending ? 'Sending...' : 'Send to All Uncontacted'}</span>
           </button>
         </div>
       </div>

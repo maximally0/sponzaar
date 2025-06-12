@@ -1,22 +1,62 @@
 
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiGet } from '../lib/api';
 
-const reportData = {
-  totalAmount: '₹2,35,000',
-  totalSponsors: 12,
-  tierBreakdown: [
-    { tier: 'Title Sponsor', count: 2, amount: '₹40,000' },
-    { tier: 'Gold', count: 4, amount: '₹40,000' },
-    { tier: 'Silver', count: 6, amount: '₹30,000' },
-  ],
-  monthlyProgress: [
-    { month: 'January', amount: '₹45,000' },
-    { month: 'February', amount: '₹78,000' },
-    { month: 'March', amount: '₹112,000' },
-  ]
-};
+interface ReportData {
+  totalAmount: string;
+  totalSponsors: number;
+  tierBreakdown: Array<{
+    tier: string;
+    count: number;
+    amount: string;
+  }>;
+  monthlyProgress: Array<{
+    month: string;
+    amount: string;
+  }>;
+}
 
 export const Reports = () => {
+  const { data: reportData, isLoading } = useQuery({
+    queryKey: ['/api/reports'],
+    queryFn: () => apiGet<ReportData>('/api/reports')
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-12">
+        <div className="h-8 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="border border-border p-8">
+            <div className="space-y-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-6 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+              ))}
+            </div>
+          </div>
+          <div className="border border-border p-8">
+            <div className="space-y-6">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-6 bg-gray-200 dark:bg-gray-800 animate-pulse rounded"></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!reportData) {
+    return (
+      <div className="space-y-12">
+        <div>
+          <h1 className="text-2xl font-medium text-foreground mb-2">Reports</h1>
+          <p className="text-muted-foreground text-sm">No report data available</p>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-12">
       <div className="flex justify-between items-start">
