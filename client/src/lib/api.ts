@@ -23,3 +23,9 @@ export async function apiPatch<T>(url: string, body: any): Promise<T> {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+export async function apiDelete<T>(url: string): Promise<T> {
+  const res = await fetch(`/api${url}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}

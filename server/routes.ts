@@ -278,6 +278,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH /api/sponsors/:id - Update sponsor fields
+  app.patch('/api/sponsors/:id', (req, res) => {
+    try {
+      const sponsorId = req.params.id;
+      const updates = req.body;
+      
+      if (!sponsorId) {
+        return res.status(400).json({ error: 'Sponsor ID is required' });
+      }
+
+      // Find the sponsor in the array
+      const sponsorIndex = sponsors.findIndex(sponsor => sponsor.id === sponsorId);
+      
+      if (sponsorIndex === -1) {
+        return res.status(404).json({ error: 'Sponsor not found' });
+      }
+
+      // Update the sponsor with provided fields
+      const updatedSponsor = {
+        ...sponsors[sponsorIndex],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      sponsors[sponsorIndex] = updatedSponsor;
+      res.json(updatedSponsor);
+    } catch (error) {
+      console.error('Error updating sponsor:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  // DELETE /api/sponsors/:id - Delete sponsor
+  app.delete('/api/sponsors/:id', (req, res) => {
+    try {
+      const sponsorId = req.params.id;
+      
+      if (!sponsorId) {
+        return res.status(400).json({ error: 'Sponsor ID is required' });
+      }
+
+      // Find the sponsor index
+      const sponsorIndex = sponsors.findIndex(sponsor => sponsor.id === sponsorId);
+      
+      if (sponsorIndex === -1) {
+        return res.status(404).json({ error: 'Sponsor not found' });
+      }
+
+      // Remove the sponsor from the array
+      const deletedSponsor = sponsors.splice(sponsorIndex, 1)[0];
+      
+      res.json({ 
+        success: true, 
+        message: 'Sponsor deleted successfully', 
+        deletedSponsor 
+      });
+    } catch (error) {
+      console.error('Error deleting sponsor:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   // POST /api/send-to-uncontacted - Send emails to all uncontacted sponsors
   app.post('/api/send-to-uncontacted', async (req, res) => {
     try {
