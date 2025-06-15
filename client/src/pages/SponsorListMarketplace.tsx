@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { apiGet, apiPost } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 
+// Backend provides id, title, price, tags, sponsors (array), not name/description/seller/count
 interface MarketplaceList {
   id: string;
   title: string;
@@ -22,12 +24,10 @@ export const SponsorListMarketplace = () => {
   const [error, setError] = useState<string | null>(null);
   const [importingList, setImportingList] = useState<string | null>(null);
 
-  // Fetch marketplace data on component mount
   useEffect(() => {
     const fetchMarketplaceData = async () => {
       setIsLoading(true);
       setError(null);
-      
       try {
         const data = await apiGet<MarketplaceList[]>('/marketplace');
         setMarketplaceLists(data);
@@ -41,18 +41,18 @@ export const SponsorListMarketplace = () => {
     fetchMarketplaceData();
   }, []);
 
-  const handlePreview = (listName: string) => {
-    alert(`Preview functionality for "${listName}" would open here`);
+  const handlePreview = (listTitle: string) => {
+    alert(`Preview functionality for "${listTitle}" would open here`);
   };
 
   const handleImport = async (list: MarketplaceList) => {
     setImportingList(list.id);
-    
+
     try {
       await apiPost('/lists/import', {
         sponsors: list.sponsors
       });
-      
+
       toast({
         title: "List imported successfully",
         description: `${list.sponsors.length} sponsors imported from "${list.title}"`
@@ -120,11 +120,9 @@ export const SponsorListMarketplace = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-lg font-medium text-white mb-2 group-hover:text-neutral-200 transition-colors">
-                    {list.name}
+                    {list.title}
                   </h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed">
-                    {list.description}
-                  </p>
+                  {/* Description is not provided by backend, so omitted */}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -140,12 +138,8 @@ export const SponsorListMarketplace = () => {
 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-neutral-500 text-xs font-mono">Creator</span>
-                    <span className="text-neutral-300 text-xs">{list.seller}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-neutral-500 text-xs font-mono">Sponsors</span>
-                    <span className="text-neutral-300 text-xs">{list.count} contacts</span>
+                    <span className="text-neutral-300 text-xs">{list.sponsors.length} contacts</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-neutral-500 text-xs font-mono">Price</span>
@@ -155,16 +149,17 @@ export const SponsorListMarketplace = () => {
 
                 <div className="flex space-x-3 pt-2">
                   <button
-                    onClick={() => handlePreview(list.name)}
+                    onClick={() => handlePreview(list.title)}
                     className="flex-1 px-4 py-2 text-sm text-neutral-300 border border-neutral-800 bg-transparent hover:bg-neutral-950 hover:text-white transition-colors"
                   >
                     Preview
                   </button>
                   <button
-                    onClick={() => handlePurchase(list.id)}
+                    onClick={() => handleImport(list)}
+                    disabled={importingList === list.id}
                     className="flex-1 px-4 py-2 text-sm text-white border border-neutral-700 bg-transparent hover:bg-neutral-900 transition-colors"
                   >
-                    Buy List
+                    {importingList === list.id ? "Importing..." : "Import to CRM"}
                   </button>
                 </div>
               </div>
