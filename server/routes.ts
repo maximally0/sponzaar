@@ -556,7 +556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/stats', (req, res) => {
     try {
       const totalSponsors = sponsors.length;
-      const contacted = sponsors.filter(s => s.status === 'Contacted' || s.status === 'Interested').length;
+      const contacted = sponsors.filter(s => s.status === 'Contacted' || s.status === 'In Progress').length;
       const closed = sponsors.filter(s => s.status === 'Closed').length;
       const ghosted = sponsors.filter(s => s.status === 'Ghosted').length;
       
